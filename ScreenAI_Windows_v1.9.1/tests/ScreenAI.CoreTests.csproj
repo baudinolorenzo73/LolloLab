@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../src/ScreenAI/AppSettings.cs" Link="AppSettings.cs" />
+    <Compile Include="../src/ScreenAI/EnvFile.cs" Link="EnvFile.cs" />
+    <Compile Include="../src/ScreenAI/ProviderManager.cs" Link="ProviderManager.cs" />
+    <Compile Include="../src/ScreenAI/RepoAtlasExport.cs" Link="RepoAtlasExport.cs" />
+  </ItemGroup>
+</Project>

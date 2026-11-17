@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "seedVersion": 2,
+  "repositories": [
+    {
+      "id": "lfnovo/open-notebook",
+      "url": "https://github.com/lfnovo/open-notebook",
+      "category": "IA",
+      "priority": "Alta",
+      "description": "Biblioteca di documenti interrogabile con IA, citazioni, note e podcast.",
+      "project": "Biblioteca GEA",
+      "status": "Da provare",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "baudinolorenzo73/trex3",
+      "url": "https://github.com/baudinolorenzo73/trex3",
+      "category": "Personale",
+      "priority": "Alta",
+      "description": "Progetto personale per collegare OsmAnd e Amazfit T-Rex 3.",
+      "project": "OsmAnd Trek HUD",
+      "status": "Da provare",
+      "notes": "Stato storico: prototipo v0.2.0 consegnato il 31/10/2026; collaudo fisico da completare. Lo stato del repository remoto va verificato."
+    },
+    {
+      "id": "osmandapp/OsmAnd",
+      "url": "https://github.com/osmandapp/OsmAnd",
+      "category": "Mappe",
+      "priority": "Alta",
+      "description": "Navigazione e cartografia OpenStreetMap offline sul telefono.",
+      "project": "OsmAnd Trek HUD",
+      "status": "In uso",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "kaszast/mapynav-amazfit",
+      "url": "https://github.com/kaszast/mapynav-amazfit",
+      "category": "Zepp OS",
+      "priority": "Alta",
+      "description": "NaviHUD: ponte tra navigazione Android e smartwatch Amazfit.",
+      "project": "OsmAnd Trek HUD / Lettore GEA",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "Gared/zeppos-map-creator",
+      "url": "https://github.com/Gared/zeppos-map-creator",
+      "category": "Mappe",
+      "priority": "Alta",
+      "description": "Creazione di mappe Zepp OS a partire da OpenStreetMap.",
+      "project": "Mappe offline T-Rex 3",
+      "status": "Da provare",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "Freeyourgadget/Gadgetbridge",
+      "url": "https://github.com/Freeyourgadget/Gadgetbridge",
+      "category": "Zepp OS",
+      "priority": "Media",
+      "description": "Applicazione Android libera per dispositivi indossabili; sviluppo principale su Codeberg.",
+      "project": "T-Rex 3",
+      "status": "Da valutare",
+      "notes": "Sorgente attuale: https://codeberg.org/Freeyourgadget/Gadgetbridge. Verificare supporto del modello e interazione con Zepp."
+    },
+    {
+      "id": "CuberQAQ/zepp-transfer-file",
+      "url": "https://github.com/CuberQAQ/zepp-transfer-file",
+      "category": "Zepp OS",
+      "priority": "Alta",
+      "description": "Compatibilità trasferimento file per Zepp OS 2.0 e 2.1.",
+      "project": "Lettore GEA",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "zepp-health/easy-ble",
+      "url": "https://github.com/zepp-health/easy-ble",
+      "category": "Zepp OS",
+      "priority": "Media",
+      "description": "Libreria Zepp per comunicazioni Bluetooth Low Energy.",
+      "project": "Sensori e BLE",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "fwz233/txtview",
+      "url": "https://github.com/fwz233/txtview",
+      "category": "Zepp OS",
+      "priority": "Alta",
+      "description": "Trasferimento e lettura di testi sull’orologio.",
+      "project": "Lettore GEA",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "gabrielchristino/zepp_quick_notes",
+      "url": "https://github.com/gabrielchristino/zepp_quick_notes",
+      "category": "Zepp OS",
+      "priority": "Media",
+      "description": "Note brevi su smartwatch Zepp OS.",
+      "project": "Lettore GEA",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "zepp-health/awesome-zeppos",
+      "url": "https://github.com/zepp-health/awesome-zeppos",
+      "category": "Zepp OS",
+      "priority": "Media",
+      "description": "Catalogo di risorse ed esempi Zepp OS.",
+      "project": "Sviluppo Zepp OS",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "togg53192-cmd/jailbreaks",
+      "url": "https://github.com/togg53192-cmd/jailbreaks",
+      "category": "IA",
+      "priority": "Bassa",
+      "description": "Raccolta di prompt da valutare singolarmente.",
+      "project": "Ollama / OpenCode",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "HeyPuter/builder",
+      "url": "https://github.com/HeyPuter/builder",
+      "category": "IA",
+      "priority": "Media",
+      "description": "Builder di applicazioni assistito dall’IA.",
+      "project": "Prototipi web",
+      "status": "Da valutare",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "melianmiko/ZeppOS-AiChat",
+      "url": "https://github.com/melianmiko/ZeppOS-AiChat",
+      "category": "Zepp OS",
+      "priority": "Bassa",
+      "description": "Esempio storico di chat IA su Zepp OS; già indicato come archiviato.",
+      "project": "Studio architettura",
+      "status": "Archiviato",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "melianmiko/ZeppOS-Toolbox",
+      "url": "https://github.com/melianmiko/ZeppOS-Toolbox",
+      "category": "Zepp OS",
+      "priority": "Bassa",
+      "description": "Strumenti homebrew Zepp OS come riferimento.",
+      "project": "Sviluppo Zepp OS",
+      "status": "Riferimento",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "MathieuMoalic/gpx2img",
+      "url": "https://github.com/MathieuMoalic/gpx2img",
+      "category": "Mappe",
+      "priority": "Bassa",
+      "description": "Esperimento di generazione di mappe per Amazfit.",
+      "project": "Mappe offline",
+      "status": "Da valutare",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "Barath702/Nark",
+      "url": "https://github.com/Barath702/Nark",
+      "category": "Zepp OS",
+      "priority": "Bassa",
+      "description": "Prototipo di indicazioni Google Maps su Zepp OS.",
+      "project": "Navigazione",
+      "status": "Da valutare",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "baudinolorenzo73/Scheda-botanica-pro",
+      "url": "https://github.com/baudinolorenzo73/Scheda-botanica-pro",
+      "category": "Personale",
+      "priority": "Alta",
+      "description": "Archivio botanico con schede, GPS e fotografie.",
+      "project": "Atlante di campo",
+      "status": "In uso",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "baudinolorenzo73/turni_cucina",
+      "url": "https://github.com/baudinolorenzo73/turni_cucina",
+      "category": "Personale",
+      "priority": "Alta",
+      "description": "Turni cucina da integrare con ricettario, spesa e menu.",
+      "project": "La nostra cucina",
+      "status": "In uso",
+      "notes": "Scheda iniziale ricavata dalle conversazioni; usa Controlla GitHub per aggiornare i metadati."
+    },
+    {
+      "id": "We-Gold/gpxjs",
+      "url": "https://github.com/We-Gold/gpxjs",
+      "category": "GPX e trekking",
+      "priority": "Alta",
+      "description": "Legge file GPX nel browser e calcola distanza, dislivello, quote, durata e tempo in movimento.",
+      "project": "Strumenti GPX / Atlante di campo",
+      "status": "Riferimento",
+      "notes": "Individuato nel progetto Pubblica. Licenza MIT; progetto da collaudare con tracce reali prima dell'integrazione."
+    },
+    {
+      "id": "Raruto/leaflet-elevation",
+      "url": "https://github.com/Raruto/leaflet-elevation",
+      "category": "GPX e trekking",
+      "priority": "Alta",
+      "description": "Visualizza tracce e profili altimetrici su Leaflet; supporta GPX, GeoJSON, KML e TCX.",
+      "project": "Mappe e profili altimetrici",
+      "status": "Riferimento",
+      "notes": "Individuato nel progetto Pubblica. Verificare attentamente la compatibilità della licenza GPL-3.0 prima di inserirlo in un'app."
+    },
+    {
+      "id": "tkrajina/gpxpy",
+      "url": "https://github.com/tkrajina/gpxpy",
+      "category": "GPX e trekking",
+      "priority": "Alta",
+      "description": "Libreria Python per leggere, analizzare, modificare e creare file GPX.",
+      "project": "Creazione e riparazione tracce",
+      "status": "Riferimento",
+      "notes": "Individuato nel progetto Pubblica. Utile per elaborazioni Python e Termux; non è una libreria per pagine HTML."
+    },
+    {
+      "id": "bmcbride/gps-map",
+      "url": "https://github.com/bmcbride/gps-map",
+      "category": "Mappe",
+      "priority": "Alta",
+      "description": "PWA cartografica offline con posizione GPS, Leaflet e mappe PMTiles salvate sul dispositivo.",
+      "project": "Mappe offline / OsmAnd Trek HUD",
+      "status": "Riferimento",
+      "notes": "Individuato nel progetto Pubblica. Interessante come esempio di architettura offline; non è specifico per la gestione dei GPX."
+    },
+    {
+      "id": "open-free-llm-api/awesome-freellm-apis",
+      "url": "https://github.com/open-free-llm-api/awesome-freellm-apis",
+      "category": "IA",
+      "priority": "Alta",
+      "description": "Raccolta aggiornata di provider e API per modelli IA con piani gratuiti.",
+      "project": "Repo Atlas / ScreenAI / Pubblica",
+      "status": "Riferimento",
+      "notes": "Fonte usata da Pubblica per aggiornare l'elenco delle API IA. Limiti e condizioni dei provider possono cambiare e vanno ricontrollati."
+    },
+    {
+      "id": "public-apis/public-apis",
+      "url": "https://github.com/public-apis/public-apis",
+      "category": "API e dati",
+      "priority": "Alta",
+      "description": "Grande catalogo collaborativo di API pubbliche organizzate per argomento.",
+      "project": "Repo Atlas / Pubblica",
+      "status": "Riferimento",
+      "notes": "Fonte dell'elenco di oltre 2.000 API presente in Pubblica. Da usare come catalogo sorgente, non come applicazione da installare."
+    },
+    {
+      "id": "mpetazzoni/leaflet-gpx",
+      "url": "https://github.com/mpetazzoni/leaflet-gpx",
+      "category": "GPX e trekking",
+      "priority": "Media",
+      "description": "Plugin Leaflet per disegnare una traccia GPX e ricavarne informazioni di base.",
+      "project": "Mappe e tracce GPX",
+      "status": "Da provare",
+      "notes": "Individuato nel progetto Pubblica. Verificare licenza, manutenzione e funzionamento offline prima dell'uso."
+    },
+    {
+      "id": "mapbox/togeojson",
+      "url": "https://github.com/mapbox/togeojson",
+      "category": "GPX e trekking",
+      "priority": "Media",
+      "description": "Converte file GPX e KML in GeoJSON nel browser o da riga di comando.",
+      "project": "Conversione dati cartografici",
+      "status": "Da provare",
+      "notes": "Individuato nel progetto Pubblica. Verificare con tracce contenenti quota e waypoint prima di adottarlo."
+    },
+    {
+      "id": "maverickcoderbot/waypoint",
+      "url": "https://github.com/maverickcoderbot/waypoint",
+      "category": "GPX e trekking",
+      "priority": "Media",
+      "description": "Piccolo esempio che combina sentieri OpenStreetMap/Overpass, posizione GPS e meteo Open-Meteo.",
+      "project": "Ricerca sentieri / OsmAnd Trek HUD",
+      "status": "Da provare",
+      "notes": "Individuato nel progetto Pubblica. Progetto sperimentale: utile soprattutto per studiare le chiamate Overpass, non come base già affidabile."
+    }
+  ]
+}
+

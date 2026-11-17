@@ -1,0 +1,5 @@
+open.env
+bin/
+obj/
+*.user
+*.suo
