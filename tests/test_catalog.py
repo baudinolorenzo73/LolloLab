@@ -145,6 +145,23 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(payload['messages'][1]['content'][1]['image_url']['url'], image)
             self.assertNotIn('PRIVATE_KEY', json.dumps(result))
 
+    def test_photo_analysis_includes_user_context_and_rejects_excess(self):
+        image = 'data:image/png;base64,' + base64.b64encode(b'\x89PNG\r\n\x1a\nimage-fixture').decode()
+        with patch.object(atlas, 'remote_json', return_value={'choices':[{'message':{'content':'Analisi'}}]}) as remote:
+            atlas.analyze_capture({'provider':'ollama','model':'vision','imageDataUrl':image,
+                                   'context':'Cartello: percorso da verificare'})
+            payload = json.loads(remote.call_args.args[2])
+            self.assertIn('percorso da verificare', payload['messages'][1]['content'][0]['text'])
+            with self.assertRaises(ValueError):
+                atlas.analyze_capture({'provider':'ollama','model':'vision','imageDataUrl':image,
+                                       'context':'x'*6001})
+
+    def test_ollama_verification_lists_local_models(self):
+        with patch.object(atlas, 'remote_json', return_value={'data':[{'id':'gemma3:4b'}, {'id':'nomic-embed-text'}]}):
+            result = atlas.verify_ai({'provider':'ollama','model':'gemma3:4b'})
+        self.assertTrue(result['modelListed'])
+        self.assertEqual(result['availableModels'], ['gemma3:4b', 'nomic-embed-text'])
+
 
 if __name__ == '__main__':
     unittest.main()
