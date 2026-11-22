@@ -1,4 +1,4 @@
-const CACHE='repo-atlas-v1.7.1';
+const CACHE='repo-atlas-v1.8.0';
 const FILES=['./index.html','./app.js','./model.js','./appearance.js','./discovery.js','./captures.js','./browser-draft.js','./version.json','./errors.js','./diagnostics.js','./styles.css','./seed.json','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('repo-atlas-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

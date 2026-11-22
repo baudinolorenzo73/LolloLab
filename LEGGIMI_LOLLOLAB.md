@@ -1,6 +1,8 @@
-# LolloLab 1.7.1
+# LolloLab 1.8.0
 
 LolloLab unisce l'archivio Repo Atlas alle schede di Archivio Idee. Avvia AVVIA_WINDOWS.bat su PC, oppure pubblica i file come PWA. Prima di aggiornare esporta un backup JSON completo dalla versione precedente.
+
+La vista iniziale «Da organizzare» mostra le schede con stato Da controllare, più recenti per prime. Scrivi nella casella «Annota adesso» e premi «Archivia subito»: la nota completa viene conservata e il titolo usa la prima riga. Puoi incollare anche un link. «Scatta foto» e «Scegli foto» archiviano direttamente una scheda, con la nota già scritta se presente; la fotocamera o la galleria possono essere annullate senza creare schede. Per classificare una scheda, aprila e premi «Modifica»: cambiando stato sparisce da «Da organizzare», ma resta nell’archivio. Controlla periodicamente «Backup ed esportazioni» per salvare un JSON completo.
 
 Per raccogliere velocemente un'idea premi «Nuova idea», scrivi il titolo e salva. Link e foto sono facoltativi; «Altri dettagli e valutazione» contiene stato, note, riutilizzo e valutazione. Un link diretto a un repository GitHub inserito in una nuova idea viene riconosciuto automaticamente. Le schede possono essere completate in seguito con «Modifica». Gli screenshot di ScreenAI si importano dal pulsante dedicato.
 

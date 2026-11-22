@@ -57,12 +57,12 @@ function catalogSeedVersion(data){const n=Number(!Array.isArray(data)&&data?.see
 function loadCatalog(data){repos=validateSnapshot(data);seedVersionApplied=catalogSeedVersion(data);applySettings(data)}
 function mergeBundledSeed(){if(seedVersionApplied>=bundledSeedVersion)return {changed:false,added:0};const ids=new Set(repos.map(r=>r.id.toLowerCase()));const missing=bundledSeed.filter(r=>!ids.has(r.id.toLowerCase()));repos.push(...missing.map(normalize));seedVersionApplied=bundledSeedVersion;return {changed:true,added:missing.length}}
 async function openArchive(){importMode='open';$('importFile').click()}
-async function saveFile(){if(formDirty||captureDraft)throw new AtlasError('DRAFT_UNSAVED');if(localToken){await fileQueue;if(fileGeneration!==generation)await queueFile();if(fileGeneration!==generation)throw Error('Salvataggio locale non riuscito: '+fileError);message('Archivio completo salvato in '+lastFile+'.');return true}if(fileGeneration===generation)return true;if(window.showSaveFilePicker){if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'Repo_Atlas_catalogo.json',types:[{description:'Archivio Repo Atlas',accept:{'application/json':['.json']}}]});const version=generation,data=JSON.stringify(snapshot(),null,2),stream=await fileHandle.createWritable();await stream.write(data);await stream.close();fileGeneration=version;lastFile=fileHandle.name;fileError='';storageStatus();message('Archivio completo scritto su file: '+lastFile);return true}$('confirmDownload').dataset.version=String(generation);downloadBlob(JSON.stringify(snapshot(),null,2),'application/json','Repo_Atlas_catalogo.json');$('confirmDownload').showModal();message('Download JSON richiesto. Verifica il file nei Download: il browser non permette di confermare automaticamente la scrittura.');return false}
-function saveAndExit(){if(formDirty)throw new AtlasError('DRAFT_UNSAVED');storageStatus();$('exitDialog').showModal()}
+async function saveFile(){if(formDirty||$('quickText').value.trim()||captureDraft)throw new AtlasError('DRAFT_UNSAVED');if(localToken){await fileQueue;if(fileGeneration!==generation)await queueFile();if(fileGeneration!==generation)throw Error('Salvataggio locale non riuscito: '+fileError);message('Archivio completo salvato in '+lastFile+'.');return true}if(fileGeneration===generation)return true;if(window.showSaveFilePicker){if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'Repo_Atlas_catalogo.json',types:[{description:'Archivio Repo Atlas',accept:{'application/json':['.json']}}]});const version=generation,data=JSON.stringify(snapshot(),null,2),stream=await fileHandle.createWritable();await stream.write(data);await stream.close();fileGeneration=version;lastFile=fileHandle.name;fileError='';storageStatus();message('Archivio completo scritto su file: '+lastFile);return true}$('confirmDownload').dataset.version=String(generation);downloadBlob(JSON.stringify(snapshot(),null,2),'application/json','Repo_Atlas_catalogo.json');$('confirmDownload').showModal();message('Download JSON richiesto. Verifica il file nei Download: il browser non permette di confermare automaticamente la scrittura.');return false}
+function saveAndExit(){if(formDirty||$('quickText').value.trim())throw new AtlasError('DRAFT_UNSAVED');storageStatus();$('exitDialog').showModal()}
 function filtered(){
   const q=$('search').value.toLowerCase();
   return repos.filter(r=>matchesCollection(r)&&(!$('category').value||r.category===$('category').value)&&(!$('priority').value||r.priority===$('priority').value)&&(!$('statusFilter').value||r.status===$('statusFilter').value)&&(!q||[r.id,r.title,r.url,r.description,r.notes,r.project,r.reuse,r.tags,r.analysis].join(' ').toLowerCase().includes(q)))
-    .sort((a,b)=>$('sort').value==='name'?labelFor(a).localeCompare(labelFor(b)):$('sort').value==='stars'?(b.github?.stars||0)-(a.github?.stars||0):(priorityRank[a.priority]-priorityRank[b.priority]||labelFor(a).localeCompare(labelFor(b))));
+    .sort((a,b)=>$('sort').value==='name'?labelFor(a).localeCompare(labelFor(b)):$('sort').value==='stars'?(b.github?.stars||0)-(a.github?.stars||0):$('sort').value==='recent'?(b.createdAt||'').localeCompare(a.createdAt||'')||labelFor(a).localeCompare(labelFor(b)):(priorityRank[a.priority]-priorityRank[b.priority]||labelFor(a).localeCompare(labelFor(b))));
 }
 function targets(){return chosen.size?repos.filter(r=>chosen.has(r.id)):filtered()}
 function batchTargets(){return filtered().filter(r=>chosen.has(r.id))}
@@ -72,11 +72,11 @@ function render(){
   const rows=filtered(),visible=new Set(rows.map(r=>r.id));for(const id of chosen)if(!visible.has(id))chosen.delete(id);
   if(!visible.has(current))current=rows[0]?.id||null;
   $('bulkActions').hidden=!chosen.size;$('selectedCount').textContent=chosen.size;$('clearSelection').hidden=!chosen.size;
-  $('count').textContent=repos.filter(r=>!isMine(r)).length;$('aiCount').textContent=repos.filter(r=>r.kind!=='github').length;$('highCount').textContent=repos.filter(isMine).length;
-  const headings={review:['Progetti da controllare','Repository e risorse trovati: conserva ciò che potresti riutilizzare.'],ideas:['Idee e link','Spunti, articoli e idee personali da sviluppare.'],captures:['Schermate da valutare','Screenshot e analisi conservati per essere ripresi in seguito.'],mine:['I miei progetti','Repository GitHub dell’account '+githubOwner()+'.'],all:['Tutto l’archivio','Idee, fonti e repository, compresi i tuoi progetti GitHub.']};
+  $('count').textContent=repos.filter(r=>r.status==='Da controllare').length;$('aiCount').textContent=repos.filter(r=>r.kind!=='github').length;$('highCount').textContent=repos.filter(isMine).length;
+  const headings={inbox:['Da organizzare','Idee, foto e link salvati per essere analizzati in seguito.'],review:['Progetti da controllare','Repository e risorse trovati: conserva ciò che potresti riutilizzare.'],ideas:['Idee e link','Spunti, articoli e idee personali da sviluppare.'],captures:['Schermate da valutare','Screenshot e analisi conservati per essere ripresi in seguito.'],mine:['I miei progetti','Repository GitHub dell’account '+githubOwner()+'.'],all:['Tutto l’archivio','Idee, fonti e repository, compresi i tuoi progetti GitHub.']};
   const heading=headings[$('collection').value]||headings.review;$('catalogTitle').textContent=heading[0];$('catalogSubtitle').textContent=heading[1];$('loadMineBtn').hidden=$('collection').value!=='mine';
   $('scope').textContent=rows.length+' risultati · '+chosen.size+' selezionati · Esportazione: '+(chosen.size?'selezionati':'risultati filtrati')+(storageOK?'':' · Copia di emergenza browser non disponibile');
-  $('list').innerHTML=rows.map(r=>'<article class="row '+(current===r.id?'active':'')+'"><input type="checkbox" data-check="'+escapeHTML(r.id)+'" '+(chosen.has(r.id)?'checked':'')+' aria-label="Seleziona '+escapeHTML(labelFor(r))+'"><div class="row-content"><button class="row-title" data-open="'+escapeHTML(r.id)+'">'+escapeHTML(labelFor(r))+'</button><small class="muted">'+escapeHTML(r.description.slice(0,150)||r.reuse.slice(0,150)||'Aggiungi cosa ti interessa e come riutilizzarlo.')+'</small><div class="row-meta"><span class="badge">'+escapeHTML(kindLabel(r.kind))+'</span><span>'+escapeHTML(r.category)+' · '+escapeHTML(r.status)+'</span>'+(r.updateState==='changed'?'<span class="update-badge">Aggiornamenti GitHub</span>':'')+'</div></div></article>').join('')||'<div class="empty">Nessuna scheda in questa vista. Aggiungi un’idea, cerca sul web/GitHub o cambia i filtri.</div>';
+  $('list').innerHTML=rows.map(r=>'<article class="row '+(current===r.id?'active':'')+'"><input type="checkbox" data-check="'+escapeHTML(r.id)+'" '+(chosen.has(r.id)?'checked':'')+' aria-label="Seleziona '+escapeHTML(labelFor(r))+'">'+(r.photos?.length?'<img class="row-photo" src="'+r.photos[0]+'" alt="">':'')+'<div class="row-content"><button class="row-title" data-open="'+escapeHTML(r.id)+'">'+escapeHTML(labelFor(r))+'</button><small class="muted">'+escapeHTML(r.description.slice(0,150)||r.reuse.slice(0,150)||'Aggiungi cosa ti interessa e come riutilizzarlo.')+'</small><div class="row-meta"><span class="badge">'+escapeHTML(kindLabel(r.kind))+'</span><span>'+escapeHTML(r.category)+' · '+escapeHTML(r.status)+'</span>'+(r.updateState==='changed'?'<span class="update-badge">Aggiornamenti GitHub</span>':'')+'</div></div></article>').join('')||'<div class="empty">Nessuna scheda da organizzare. Annota un’idea, incolla un link o aggiungi una foto.</div>';
   $('selectAll').textContent=rows.length&&rows.every(r=>chosen.has(r.id))?'Deseleziona risultati':'Seleziona risultati';
   $('ownedProjects').innerHTML=repos.filter(isMine).map(r=>'<option value="'+escapeHTML(r.id)+'"></option>').join('');
   renderDetail();updateCapabilities();renderDiscovery();
@@ -205,7 +205,7 @@ function loadGoogle(){
   });
   return googleLibrary;
 }
-async function saveDrive(){if(formDirty)throw new AtlasError('DRAFT_UNSAVED');const version=generation,data=JSON.stringify(snapshot(),null,2),token=await googleAccess('https://www.googleapis.com/auth/drive.file');const boundary='repo_atlas_'+crypto.randomUUID().replaceAll('-',''),name='Repo_Atlas_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';const metadata={name,mimeType:'application/json',appProperties:{application:'repo-atlas',schema:'3'}};const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+data+'\r\n--'+boundary+'--';message('Salvataggio completo su Drive…');const saved=await jsonFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});if(!saved.id)throw new AtlasError('GOOGLE_VERIFY');const check=await jsonFetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(saved.id)+'?fields=id,name,size,md5Checksum,webViewLink',{headers:{Authorization:'Bearer '+token}});if(Number(check.size)!==new TextEncoder().encode(data).length)throw new AtlasError('GOOGLE_VERIFY');driveGeneration=version;storageStatus();message('Backup completo confermato su Drive: '+check.name);if(check.webViewLink){const a=document.createElement('a');a.href=check.webViewLink;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' Apri backup su Drive ↗';$('message').append(a)}}
+async function saveDrive(){if(formDirty||$('quickText').value.trim())throw new AtlasError('DRAFT_UNSAVED');const version=generation,data=JSON.stringify(snapshot(),null,2),token=await googleAccess('https://www.googleapis.com/auth/drive.file');const boundary='repo_atlas_'+crypto.randomUUID().replaceAll('-',''),name='Repo_Atlas_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';const metadata={name,mimeType:'application/json',appProperties:{application:'repo-atlas',schema:'3'}};const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+data+'\r\n--'+boundary+'--';message('Salvataggio completo su Drive…');const saved=await jsonFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});if(!saved.id)throw new AtlasError('GOOGLE_VERIFY');const check=await jsonFetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(saved.id)+'?fields=id,name,size,md5Checksum,webViewLink',{headers:{Authorization:'Bearer '+token}});if(Number(check.size)!==new TextEncoder().encode(data).length)throw new AtlasError('GOOGLE_VERIFY');driveGeneration=version;storageStatus();message('Backup completo confermato su Drive: '+check.name);if(check.webViewLink){const a=document.createElement('a');a.href=check.webViewLink;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' Apri backup su Drive ↗';$('message').append(a)}}
 async function sheets(){const token=await googleAccess('https://www.googleapis.com/auth/spreadsheets');const headers={Authorization:'Bearer '+token,'Content-Type':'application/json'},values=exportRows();const data=await jsonFetch('https://sheets.googleapis.com/v4/spreadsheets',{method:'POST',headers,body:JSON.stringify({properties:{title:'Repo Atlas — '+new Date().toLocaleString('it-IT')},sheets:[{properties:{title:'Repository',gridProperties:{rowCount:Math.max(1000,values.length),columnCount:21}}}]})});message('Foglio creato: '+data.spreadsheetUrl+' · Caricamento dati…');try{await jsonFetch('https://sheets.googleapis.com/v4/spreadsheets/'+data.spreadsheetId+'/values/Repository!A1?valueInputOption=RAW',{method:'PUT',headers,body:JSON.stringify({values})});message('Esportazione completata: '+data.spreadsheetUrl)}catch(e){showError(new AtlasError('SHEETS_PARTIAL',{service:'google'}),'sheets_write')}}
 async function run(fn){if(busy)return;busy=true;updateCapabilities();const operation=fn.name?fn.name.toLowerCase():'app';try{await fn()}catch(e){showError(e,operation)}finally{busy=false;updateCapabilities()}}
 $('list').addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(b){current=b.dataset.open;document.body.classList.add('detail-open');render();if(matchMedia('(max-width:850px)').matches)$('detail').scrollIntoView({block:'start'})}});
@@ -215,8 +215,34 @@ $('detail').addEventListener('click',e=>{const a=e.target.dataset.action,r=repos
 for(const id of ['search','category','priority','statusFilter','sort','collection'])$(id).addEventListener(id==='search'?'input':'change',()=>{chosen.clear();render()});
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>requestClose(b.closest('dialog')));
 $('addBtn').onclick=()=>newEntry('idea');
-$('quickCameraBtn').onclick=()=>{newEntry('idea');$('repoCamera').click()};
-$('quickGalleryBtn').onclick=()=>{newEntry('idea');$('repoPhotos').click()};
+$('quickCameraBtn').onclick=()=>$('quickCameraInput').click();
+$('quickGalleryBtn').onclick=()=>$('quickGalleryInput').click();
+async function archiveQuick(files=[]){
+  const raw=$('quickText').value.trim();
+  if(!raw&&!files.length){$('quickFeedback').textContent='Scrivi una nota o scegli una foto.';return}
+  if(busy)return;
+  busy=true;updateCapabilities();$('quickText').disabled=true;$('quickSaveBtn').disabled=true;$('quickCameraBtn').disabled=true;$('quickGalleryBtn').disabled=true;
+  $('quickFeedback').textContent=files.length?'Preparazione foto…':'Archiviazione…';
+  try{
+    if(localToken&&!localLoaded)throw Error('Archivio locale non caricato. Ricaricalo da Backup ed esportazioni prima di aggiungere nuove schede.');
+    if(files.length>8)throw Error('Puoi aggiungere massimo 8 foto per scheda.');
+    if(repos.length>=5000)throw new AtlasError('ARCHIVE_TOO_LARGE');
+    const photos=[];for(const file of files)photos.push(await prepareEditorPhoto(file));
+    const link=(raw.match(/https?:\/\/[^\s<>]+/i)||[])[0]?.replace(/[.,;!?]+$/,'')||'';
+    const url=link?webUrl(link):'';
+    const note=raw.replace(link,'').trim();
+    const title=(note.split('\n')[0]||'').slice(0,120).trim()||(url?new URL(url).hostname:'Foto da valutare · '+new Date().toLocaleString('it-IT'));
+    const record=normalize({id:'idea:'+crypto.randomUUID(),kind:'idea',title,url,description:raw,photos,createdAt:new Date().toISOString()});
+    if(new TextEncoder().encode(JSON.stringify({...snapshot(),repositories:[...repos,record]})).length>ARCHIVE_LIMIT)throw new AtlasError('ARCHIVE_TOO_LARGE');
+    repos.push(record);current=record.id;chosen.clear();
+    for(const field of ['search','category','priority','statusFilter'])$(field).value='';
+    $('collection').value='inbox';save();$('quickText').value='';
+    $('quickFeedback').textContent='Archiviato. Completa la scheda quando vuoi.';
+  }catch(error){$('quickFeedback').textContent=errorInfo(error).message;recordDiagnostic(error.code||'UNKNOWN',{operation:'quick_capture',level:'error'})}
+  finally{busy=false;updateCapabilities();$('quickText').disabled=false;$('quickSaveBtn').disabled=false;$('quickCameraBtn').disabled=false;$('quickGalleryBtn').disabled=false}
+}
+$('quickSaveBtn').onclick=()=>archiveQuick();
+for(const id of ['quickCameraInput','quickGalleryInput'])$(id).onchange=e=>{const files=Array.from(e.target.files||[]);e.target.value='';if(files.length)archiveQuick(files)};
 $('entryKind').onchange=()=>{formDirty=true;updateEditorKind()};
 $('editForm').onsubmit=e=>{
   e.preventDefault();if(photosLoading){$('editorFeedback').textContent='Attendi il caricamento delle immagini.';return}try{
@@ -341,7 +367,7 @@ $('exitRequireDrive').onchange=storageStatus;
 $('reloadLocalBtn').onclick=()=>run(reloadLocal);
 $('finishExitBtn').onclick=()=>{if(formDirty||fileGeneration!==generation||($('exitRequireDrive').checked&&driveGeneration!==generation)){message('Completa i salvataggi richiesti.');return}$('exitDialog').close();message(driveGeneration===generation?'File e Drive confermati. Puoi chiudere questa scheda.':'File confermato. Puoi chiudere questa scheda; il backup Drive resta da fare.');};
 $('confirmedDownloadBtn').onclick=()=>{fileGeneration=Number($('confirmDownload').dataset.version);lastFile='Download verificato da te';storageStatus();$('confirmDownload').close();message('Download confermato. Puoi anche creare un backup su Drive.')};
-window.addEventListener('beforeunload',e=>{if(formDirty||captureDraft||busy||fileGeneration!==generation){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{if(formDirty||$('quickText').value.trim()||captureDraft||busy||fileGeneration!==generation){e.preventDefault();e.returnValue=''}});
 for(const id of ['editor','settings'])$(id).addEventListener('input',()=>{formDirty=true});
 $('editor').addEventListener('close',()=>{editorSession++;photosLoading=false;formDirty=false});
 $('settings').addEventListener('close',()=>{formDirty=false});
@@ -452,7 +478,7 @@ $('checkAllUpdatesBtn').onclick=()=>run(async function check_updates(){
   message('Controllati '+(list.length-failed)+'/'+list.length+' repository. Aggiornamenti trovati: '+changed+'.'+(failed?' Errori: '+failed+'. Puoi esportare il log diagnostico.':''));
 });
 $('appUpdateBtn').onclick=()=>run(checkAppUpdate);
-$('reloadAppBtn').onclick=()=>{if(formDirty||fileGeneration!==generation){message('Salva il file completo prima di ricaricare.');return}location.reload()};
+$('reloadAppBtn').onclick=()=>{if(formDirty||$('quickText').value.trim()||fileGeneration!==generation){message('Archivia la nota e salva il file completo prima di ricaricare.');return}location.reload()};
 recordDiagnostic('APP_START',{operation:'start',service:'app',level:'info'});
 init();
 
