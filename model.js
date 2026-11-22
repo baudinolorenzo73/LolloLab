@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.8.1',DEFAULT_GITHUB_OWNER='baudinolorenzo73';
+const APP_VERSION='1.8.2',DEFAULT_GITHUB_OWNER='baudinolorenzo73';
 function webUrl(value,optional=false){
   if(optional&&!String(value||'').trim())return '';
   let url;try{url=new URL(String(value).trim())}catch{throw new AtlasError('WEB_URL_INVALID')}

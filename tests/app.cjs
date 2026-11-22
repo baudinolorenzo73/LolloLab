@@ -285,6 +285,9 @@ function pass(name){checks++;console.log('PASS '+name)}
   assert.equal(aiChoice.nodes.get('model').value,'openrouter/free');
   aiChoice.run("$('provider').value='ollama';$('provider').onchange()");
   assert.equal(aiChoice.nodes.get('model').value,'');
-  pass('Free model preset follows provider choice without storing a credential');
+  aiChoice.run("$('provider').value='gemini';$('provider').onchange()");
+  assert.equal(aiChoice.nodes.get('model').value,'gemini-3.6-flash');
+  assert.match(aiChoice.nodes.get('aiProviderHelp').textContent,/Google AI Studio/);
+  pass('Free model presets follow provider choice without storing a credential');
   console.log('All '+checks+' behavioral checks passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -162,6 +162,19 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(result['modelListed'])
         self.assertEqual(result['availableModels'], ['gemma3:4b', 'nomic-embed-text'])
 
+    def test_gemini_uses_openai_compatible_endpoint_and_lists_models(self):
+        with patch.object(atlas, 'remote_json', return_value={'choices':[{'message':{'content':'Analisi Gemini'}}]}) as remote:
+            result = atlas.analyze({'provider':'gemini','model':'gemini-3.6-flash',
+                                    'apiKey':'PRIVATE_GEMINI','repository':{'id':'idea:12345678','kind':'idea','title':'Idea'}})
+        self.assertEqual(result['analysis'], 'Analisi Gemini')
+        self.assertEqual(remote.call_args.args[0], 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions')
+        self.assertEqual(remote.call_args.args[1]['Authorization'], 'Bearer PRIVATE_GEMINI')
+        with patch.object(atlas, 'remote_json', return_value={'data':[{'id':'gemini-3.6-flash'}]}) as verify:
+            checked = atlas.verify_ai({'provider':'gemini','model':'gemini-3.6-flash','apiKey':'PRIVATE_GEMINI'})
+        self.assertTrue(checked['modelListed'])
+        self.assertEqual(checked['availableModels'], ['gemini-3.6-flash'])
+        self.assertEqual(verify.call_args.args[0], 'https://generativelanguage.googleapis.com/v1beta/openai/models')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -38,6 +38,7 @@ MAX_CAPTURE = 4 * 1024 * 1024
 STATIC = {'index.html', 'app.js', 'model.js', 'appearance.js', 'discovery.js', 'captures.js', 'browser-draft.js', 'version.json', 'errors.js', 'diagnostics.js', 'styles.css', 'seed.json', 'sw.js', 'manifest.webmanifest',
           'icon.svg', 'icon-192.png', 'icon-512.png'}
 PROVIDERS = {'ollama': 'http://127.0.0.1:11434/v1/chat/completions',
+             'gemini': 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
              'groq': 'https://api.groq.com/openai/v1/chat/completions',
              'openrouter': 'https://openrouter.ai/api/v1/chat/completions',
              'openai': 'https://api.openai.com/v1/chat/completions'}
@@ -326,7 +327,7 @@ def verify_ai(data):
     return {'authenticated': True,
             'modelListed': any(isinstance(item, dict) and item.get('id') == model for item in models) if model else None,
             'quotaExhausted': False,
-            'availableModels': [item['id'] for item in models if isinstance(item, dict) and isinstance(item.get('id'), str)][:100] if provider == 'ollama' else []}
+            'availableModels': [item['id'] for item in models if isinstance(item, dict) and isinstance(item.get('id'), str)][:100] if provider in ('ollama', 'gemini') else []}
 
 
 def analyze_capture(data):
