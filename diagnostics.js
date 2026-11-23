@@ -19,9 +19,8 @@ function recordDiagnostic(code,meta={}){
   try{localStorage.setItem(LOG_KEY,JSON.stringify(diagnosticEvents))}catch{}
 }
 function diagnosticSnapshot(){
-  return {application:'Repo Atlas',version:'1.5.0',exportedAt:new Date().toISOString(),
-    environment:{online:navigator.onLine!==false,localAssistant:!!localToken,localArchiveLoaded:localLoaded,
-      browserEmergencyCopy:storageOK,pendingFileSave:fileGeneration!==generation,
+  return {application:'Repo Atlas',version:'1.10.0',exportedAt:new Date().toISOString(),
+    environment:{online:navigator.onLine!==false,browserEmergencyCopy:storageOK,pendingFileSave:fileGeneration!==generation,
       provider:['ollama','groq','openrouter','openai'].includes(prefs.provider)?prefs.provider:'unset',
       aiKeyPresent:!!session.apiKey,modelPresent:!!prefs.model,githubTokenPresent:!!session.githubKey,
       googleClientPresent:!!prefs.googleClient,googleAccessActive:!!googleAuth.token&&googleAuth.expiresAt>Date.now()},
@@ -30,7 +29,6 @@ function diagnosticSnapshot(){
 }
 async function exportDiagnostics(){
   const log=diagnosticSnapshot();
-  if(localToken){try{const result=await local('logs',{});log.serverEvents=Array.isArray(result.events)?result.events.slice(-300).map(safeEvent):[]}catch{log.serverLogUnavailable=true}}
   downloadBlob(JSON.stringify(log,null,2),'application/json','Repo_Atlas_log_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');
   message('Log diagnostico esportato. Puoi inviarlo insieme a una descrizione del problema. Chiavi, token e contenuto delle schede sono esclusi.');
   if($('settings').open)$('settingsFeedback').textContent='Log diagnostico esportato. Puoi inviarlo per assistenza.';

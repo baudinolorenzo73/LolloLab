@@ -26,26 +26,22 @@ const ERROR_HELP={
   AI_RATE:['Troppe richieste al servizio IA','Attendi qualche minuto e riprova con meno repository. Controlla i limiti del provider. Non è necessariamente un problema di credito.','provider'],
   AI_REQUEST:['Richiesta IA non accettata','Il modello potrebbe non supportare i parametri o la quantità di testo. Per uno screenshot deve supportare anche le immagini: una chiave verificata non basta. Prova un modello vision compatibile con chat/completions.','model'],
   AI_EMPTY:['Il modello non ha restituito testo','Prova di nuovo o scegli un altro modello. L’analisi precedente, se esiste, resta conservata.','model'],
-  LOCAL_REQUIRED:['Serve l’assistente sul PC','Per analisi IA e controllo ZIP avvia AVVIA_WINDOWS.bat e usa l’indirizzo mostrato nella finestra. GitHub Pages non esegue il server Python. Il catalogo resta utilizzabile.',''],
   OLLAMA_OFFLINE:['Ollama locale non raggiungibile','Avvia Ollama sul PC e verifica che risponda sulla porta 11434. Il nome del modello deve corrispondere a uno già installato. Per Ollama non serve una chiave API cloud.','model'],
-  LOCAL_AUTH:['Collegamento al server locale scaduto','Il server potrebbe essere stato riavviato. Esporta prima un JSON di sicurezza, poi ricarica la pagina per ristabilire il collegamento.',''],
-  LOCAL_OFFLINE:['Assistente locale non raggiungibile','Controlla che la finestra AVVIA_WINDOWS.bat sia aperta e che tu stia usando il suo indirizzo. Le modifiche in lavoro non risultano confermate su disco.',''],
   GOOGLE_CLIENT_MISSING:['Manca il Client ID Google','Apri Impostazioni e inserisci un Client ID OAuth per applicazione web. Non è una chiave API né un token di accesso. Poi usa Collega Google.','googleClient'],
   GOOGLE_CLIENT_INVALID:['Client ID Google non valido','Usa il Client ID OAuth per applicazione web che termina con .apps.googleusercontent.com. Non incollare client secret, API key o access token in questo campo.','googleClient'],
   GOOGLE_CONFIG:['Configurazione Google non accettata','In Google Cloud verifica il Client ID web, le origini JavaScript autorizzate e la schermata di consenso. Se il progetto è in test, controlla gli utenti ammessi.','googleClient'],
   GOOGLE_POPUP:['Finestra Google bloccata','Consenti i popup per questo sito, poi premi nuovamente Collega Google. Se usi un browser interno a un’altra app, apri Repo Atlas in Chrome o Safari.','googleClient'],
   GOOGLE_CLOSED:['Accesso Google interrotto','La finestra di accesso è stata chiusa prima di completare la procedura. Riprova e attendi il ritorno all’app. Nessun backup è stato confermato.','googleClient'],
-  GOOGLE_DENIED:['Autorizzazione Google non concessa','Accedi con l’account desiderato e concedi i permessi richiesti per Drive o Sheets. Un account gestito potrebbe richiedere l’intervento del suo amministratore.','googleClient'],
+  GOOGLE_DENIED:['Autorizzazione Google non concessa','Accedi con l’account desiderato e concedi i permessi richiesti per Drive. Un account gestito potrebbe richiedere l’intervento del suo amministratore.','googleClient'],
   GOOGLE_TOKEN_MISSING:['Google non ha restituito un token','La configurazione è presente, ma l’accesso non è completo. Premi Collega Google e completa il consenso. Il token viene ottenuto automaticamente: non devi incollarlo a mano.','googleClient'],
   GOOGLE_EXPIRED:['Accesso Google scaduto o revocato','Premi Collega Google e autorizza di nuovo l’app, poi ripeti l’operazione. Il token è temporaneo e non viene incluso nei backup o nei log.','googleClient'],
-  GOOGLE_SCOPE:['Permessi Google insufficienti','Ripeti il collegamento concedendo il permesso richiesto. Drive e Sheets hanno permessi diversi: autorizzare Drive non basta per esportare in Sheets.','googleClient'],
-  GOOGLE_API_DISABLED:['API Google non abilitata','Nel progetto Google Cloud del Client ID abilita Google Drive API per i backup e Google Sheets API per i fogli. Attendi l’attivazione e riprova.','googleClient'],
+  GOOGLE_SCOPE:['Permessi Google insufficienti','Ripeti il collegamento concedendo il permesso richiesto.','googleClient'],
+  GOOGLE_API_DISABLED:['API Google non abilitata','Nel progetto Google Cloud del Client ID abilita Google Drive API. Attendi l’attivazione e riprova.','googleClient'],
   GOOGLE_FORBIDDEN:['Google ha rifiutato l’operazione','Verifica che l’API sia abilitata, i permessi concessi e le regole dell’account. Il codice ricevuto non permette sempre di distinguere queste cause.','googleClient'],
   GOOGLE_RATE:['Limite richieste Google raggiunto','Attendi e riprova. Se il problema continua controlla le quote del progetto Google Cloud.','googleClient'],
   GOOGLE_STORAGE:['Spazio o limite di archiviazione Google raggiunto','Controlla lo spazio disponibile e i limiti del tuo account Drive. Conserva intanto il backup JSON sul dispositivo.','googleClient'],
   GOOGLE_LIBRARY:['Accesso Google non caricato','Controlla Internet e gli eventuali blocchi del browser per accounts.google.com. Poi riprova il collegamento.','googleClient'],
   GOOGLE_VERIFY:['Backup Drive non verificato','Il file potrebbe essere stato creato, ma la conferma è incompleta. Controlla Drive prima di riprovare per evitare copie duplicate. Il backup rimane da verificare.','googleClient'],
-  SHEETS_PARTIAL:['Foglio creato, dati non confermati','Apri Google Sheets e controlla il foglio più recente. La creazione è riuscita, ma il caricamento dei dati è fallito. Esporta intanto un XLSX.','googleClient'],
   GITHUB_AUTH:['Token GitHub non accettato','Il token è facoltativo per repository pubblici. Reinserisci un token valido oppure svuota il campo per continuare senza token, con limiti di richieste inferiori.','githubKey'],
   GITHUB_TOKEN_MISSING:['Non hai inserito un token GitHub','Per verificarlo incolla il token in Impostazioni. Per usare i repository pubblici puoi anche lasciare il campo vuoto: in quel caso non c’è un token da verificare.','githubKey'],
   GITHUB_NOT_FOUND:['Repository non trovato o non accessibile','Controlla proprietario e nome. Un repository privato o senza permessi può apparire come non trovato. Il controllo ZIP di questa app supporta soltanto repository pubblici.','githubKey'],
@@ -54,8 +50,7 @@ const ERROR_HELP={
   NETWORK:['Connessione al servizio non riuscita','Controlla Internet e riprova. Se la rete funziona, un blocco del browser, un firewall o il servizio remoto possono impedire la richiesta.',''],
   TIMEOUT:['Il servizio non ha risposto in tempo','Controlla la connessione e riprova. Con Ollama il primo avvio del modello può essere lento: verifica che il PC abbia memoria sufficiente.',''],
   SERVICE_UNAVAILABLE:['Servizio temporaneamente non disponibile','Attendi e riprova. I dati già salvati nel catalogo restano disponibili.',''],
-  RESPONSE_INVALID:['Risposta del servizio non valida','Il servizio ha restituito un formato inatteso. Controlla che il server locale sia aggiornato, poi riprova.',''],
-  SAVE_CONFLICT:['Archivio modificato in un’altra finestra','Esporta un JSON di sicurezza. In Backup ed esportazioni usa Ricarica archivio locale; poi riconcilia le modifiche. Il file esistente non viene sovrascritto.',''],
+  RESPONSE_INVALID:['Risposta del servizio non valida','Il servizio ha restituito un formato inatteso. Riprova tra poco; se succede ancora, esporta il log diagnostico.',''],
   FILE_PERMISSION:['Permesso di scrittura negato','Consenti l’accesso al file o scegli una cartella scrivibile. Sul PC controlla i permessi della cartella del programma. Il salvataggio non è confermato.',''],
   DISK_FULL:['Spazio su disco esaurito','Libera spazio e ripeti il salvataggio. Se possibile esporta un JSON su un altro supporto.',''],
   FILE_CANCELLED:['Scelta del file annullata','Nessun nuovo file è stato confermato. Riprova Salva file completo quando sei pronto.',''],
@@ -92,8 +87,9 @@ function httpError(service,status,body={}){
     else if(status===400)code='GOOGLE_CONFIG';
   }else if(service==='github'){
     code=status===401?'GITHUB_AUTH':status===404?'GITHUB_NOT_FOUND':status===429||body.rateLimited?'GITHUB_RATE':status===403?'GITHUB_FORBIDDEN':'SERVICE_UNAVAILABLE';
-  }else if(service==='local'){
-    code=status===403?'LOCAL_AUTH':status===409?'SAVE_CONFLICT':status===404?'LOCAL_REQUIRED':status===413?'ARCHIVE_TOO_LARGE':'RESPONSE_INVALID';
+  }else if(service==='ai'){
+    const text=JSON.stringify(body).toLowerCase();
+    code=status===401?'AI_AUTH':status===402||/insufficient_quota|credit|billing/.test(text)?'AI_QUOTA':status===403?'AI_PERMISSION':status===404?'AI_MODEL':status===429?'AI_RATE':[400,413,422].includes(status)?'AI_REQUEST':'SERVICE_UNAVAILABLE';
   }
   return new AtlasError(code,{service,status});
 }

@@ -16,3 +16,46 @@ header{padding-top:22px;padding-bottom:22px}header p{max-width:640px}.app-nav{ma
 [data-theme="dark"] .app-nav button.active{background:var(--green);color:var(--contrast)}[data-theme="dark"] .bulk-actions{background:var(--accent)}
 @media(max-width:600px){header{flex-wrap:wrap}.search-result{flex-direction:column;align-items:stretch}.collection-bar{display:block}.collection-bar label{min-width:0}.header-actions button{font-size:13px}}
 .capture-image{display:block;max-width:100%;max-height:420px;object-fit:contain;background:var(--raised,#f3f6f0);border:1px solid var(--line);border-radius:10px;margin:14px auto}.capture-original pre{max-height:300px}#captureDialog input[type="file"]{width:100%}#captureAnalysis{min-height:150px}
+
+/* ===== API gratuite (dall'app «api», fusa nella 1.8.0) ===== */
+.api-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 16px}
+.api-tabs button{flex:1 1 200px}
+.api-tabs button.active{background:var(--green);color:var(--contrast,#fff);border-color:var(--green)}
+#apiView .apicard{margin-bottom:16px}
+#apiView .apicard h2{font-size:18px;margin:0 0 6px}
+#apiView .nota{color:var(--soft);font-size:13.5px;margin:4px 0}
+#apiView .riga{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+#apiView .riga>*{flex:1 1 auto}
+#apiView input[type=text],#apiView select{width:100%;margin:6px 0}
+#apiView label.chk{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:14px}
+#apiView button.primario{background:var(--green);color:var(--contrast,#fff);border-color:var(--green)}
+#apiView .msg{border-radius:9px;padding:10px 12px;margin:8px 0;font-size:14px;border:1px solid var(--line);overflow-wrap:anywhere;background:var(--raised,#f3f6f0)}
+#apiView .msg.ok{border-color:#2f8f5b;color:#1f6e45}#apiView .msg.err{border-color:#c44f48;color:#a23939}#apiView .msg.avv{border-color:#b7791f;color:#8a5a10}#apiView .msg.inf{color:var(--soft)}
+[data-theme="dark"] #apiView .msg.ok{color:#8fe0b4}[data-theme="dark"] #apiView .msg.err{color:#ffafa0}[data-theme="dark"] #apiView .msg.avv{color:#f2c879}
+#apiView .api-filtri{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 0 2px}
+#apiView .api-voce{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--raised,#f3f6f0)}
+#apiView .api-testa{display:flex;gap:8px;align-items:flex-start}
+#apiView .api-nome{flex:1;font-weight:650;overflow-wrap:anywhere}
+#apiView .api-desc{margin:4px 0 6px;font-size:14px}
+#apiView .api-az{display:flex;gap:6px;flex:none}
+#apiView .api-az button{min-width:38px;padding:5px 8px;font-size:16px}
+#apiView .api-az button.on,#apiView .ai-scheda .ai-testa button.on{background:#f0b44c;border-color:#f0b44c;color:#2a1d05}
+#apiView .api-badge{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--line);margin:0 4px 4px 0;color:var(--soft)}
+#apiView .api-badge.ok{border-color:#2f8f5b;color:#1f6e45}#apiView .api-badge.no{border-color:#c44f48;color:#a23939}#apiView .api-badge.mid{border-color:#b7791f;color:#8a5a10}
+[data-theme="dark"] #apiView .api-badge.ok{color:#8fe0b4}[data-theme="dark"] #apiView .api-badge.no{color:#ffafa0}[data-theme="dark"] #apiView .api-badge.mid{color:#f2c879}
+#apiView .api-aggiungi{margin-top:12px}#apiView .api-aggiungi summary{cursor:pointer;font-weight:600}
+#apiView .api-aggiungi label{display:block;margin:10px 0 2px;font-size:13px}
+#apiView .api-gruppo{margin:14px 0 4px;font-weight:700;color:var(--green)}
+#apiView .api-prova{margin-top:6px;font-size:13.5px;overflow-wrap:anywhere}
+#apiView .api-prova.ok{color:#1f6e45}#apiView .api-prova.ko{color:#a23939}#apiView .api-prova.ni{color:var(--soft)}
+[data-theme="dark"] #apiView .api-prova.ok{color:#8fe0b4}[data-theme="dark"] #apiView .api-prova.ko{color:#ffafa0}
+#apiView .api-bottoni{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+#apiView .api-bottoni button,#apiView .api-bottoni a.btn{padding:6px 12px;font-size:14px}
+#apiView .ai-griglia{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px}
+#apiView .ai-scheda{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--raised,#f3f6f0);min-width:0}
+#apiView .ai-scheda h3{margin:0;font-size:16px;overflow-wrap:anywhere}
+#apiView .ai-testa{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+#apiView .ai-desc{margin:6px 0;font-size:13.5px;color:var(--soft);overflow-wrap:anywhere}
+#apiView .ai-scheda code{font-size:11px;word-break:break-all}
+
+.add-choices{display:grid;gap:10px;margin:12px 0}.add-choices button{min-height:52px;font-size:1.05em;text-align:left}.app-nav button.primary{margin-left:auto}#discoverBackBtn{margin-bottom:8px}

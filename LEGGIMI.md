@@ -8,11 +8,11 @@
 4. Premi **Archivia da valutare**. La scheda finisce in **Schermate da valutare**, con stato Da controllare.
 5. Quando vuoi riprenderla, apri la scheda: l’immagine e l’analisi iniziale sono conservate. Aggiungi cosa vuoi riutilizzare, per quale progetto, tag e note; cambia stato quando hai deciso.
 
-Il flusso è disponibile anche per schermate non relative a GitHub. I link delle fonti vanno confermati: non vengono inventati o aperti automaticamente dall’IA. L’analisi integrata usa il provider/modello già configurato in Repo Atlas e richiede un modello vision e l’assistente PC. L’archiviazione senza analisi funziona senza provider e offline. Un controllo positivo della chiave API non dimostra che il modello supporti le immagini.
+Il flusso è disponibile anche per schermate non relative a GitHub. I link delle fonti vanno confermati: non vengono inventati o aperti automaticamente dall’IA. L’analisi integrata parte dal browser e usa il provider scelto in Impostazioni (serve un modello con immagini).
 
 ### Collegamento con ScreenAI 1.8 per Windows
 
-Il pacchetto include la cartella **ScreenAI_Windows_v1.8**, con sorgenti completi e **compila-portatile.bat**. Sono stati aggiornati i sorgenti; qui non è stata eseguita una compilazione .NET/Windows e non è incluso un nuovo EXE già compilato.
+ScreenAI per Windows è un programma separato: dalla versione 1.8.0 di LolloLab la sua cartella non è più nel pacchetto. LolloLab continua a importare i file **.screenai.json** che esporta.
 
 - Dal menu dell’icona scegli **Cattura idea per Repo Atlas** oppure usa la normale cattura Ctrl+Alt+S.
 - Nel risultato premi **Esporta per Repo Atlas**. Se la finestra dei risultati è disattivata, apri **Ultima risposta** dal menu.
@@ -26,9 +26,9 @@ Il passaggio fra le due app in questa versione avviene **tramite file**: non è 
 
 Massimo **4 MB per immagine**, **64 MB per archivio** e 5000 schede. Se l’immagine è troppo grande viene rifiutata senza ricomprimerla silenziosamente. Ritagliala o scegli una qualità inferiore in ScreenAI.
 
-Il backup JSON completo e il backup Drive includono le immagini e l’analisi originale. CSV/XLSX/PDF restano riepiloghi testuali: non sostituiscono il JSON. Le schermate non sono incluse nei log diagnostici. Nel browser la copia di emergenza estesa usa IndexedDB; la sua disponibilità dipende da spazio e permessi del browser. Mantieni comunque un backup su file.
+Il backup JSON completo e il backup Drive includono le immagini e l’analisi originale. XLSX/PDF restano riepiloghi testuali: non sostituiscono il JSON. Le schermate non sono incluse nei log diagnostici. Nel browser la copia di emergenza estesa usa IndexedDB; la sua disponibilità dipende da spazio e permessi del browser. Mantieni comunque un backup su file.
 
-Si importa schema 1/2/3 e si scrive **schema 3**, per impedire che le vecchie versioni eliminino immagini che non sanno gestire. Prima di aggiornare salva un backup e conserva data e downloads. Aggiorna anche server.py. Nessuna migrazione può recuperare immagini non archiviate dalle vecchie versioni di ScreenAI.
+Si importa schema 1/2/3 e si scrive **schema 4**. Prima di aggiornare salva un backup JSON completo.
 
 ## Novità 1.4.0: archivio per idee da riutilizzare
 
@@ -40,14 +40,14 @@ Si importa schema 1/2/3 e si scrive **schema 3**, per impedire che le vecchie ve
 - Nella raccolta personale, **Importa miei repository pubblici** legge i repository pubblici dell’account e aggiunge quelli assenti, senza sostituire le tue note. Non è una ricerca dei repository privati.
 - **Aggiorna GitHub** controlla tutti i repository archiviati, compresi quelli personali; il comando selezionati controlla soltanto la selezione. Mostra un avviso sulle schede cambiate e, quando disponibili due commit differenti, il collegamento Vedi modifiche. Il primo controllo crea una base di confronto; le idee e i link web non hanno commit da confrontare. Il controllo usa ultimo push e commit del ramo predefinito, non è una verifica di ogni file o release.
 - **Aggiorna app** confronta la versione caricata con version.json pubblicato nello stesso sito. Se esiste un aggiornamento richiede di salvare prima il file completo e propone Ricarica app. Per rendere disponibile una nuova versione devi prima pubblicare il pacchetto aggiornato su GitHub Pages.
-- Le analisi IA di link e idee usano descrizione, note e riutilizzo salvati. Non viene scaricato o letto automaticamente il sito esterno. Servono l’assistente PC e un modello configurato come prima.
+- Le analisi IA di link e idee usano descrizione, note e riutilizzo salvati. Non viene scaricato o letto automaticamente il sito esterno. Serve un modello configurato in Impostazioni: l’analisi parte direttamente dal browser.
 - Esportazioni e backup comprendono i nuovi campi. Log e verifiche delle credenziali restano disponibili.
 
 ### Compatibilità dei dati
 
 Questa versione importa i backup schema 1 e scrive schema 2, necessario per idee e link web. I vecchi repository diventano schede GitHub senza perdere note, analisi o README; lo stato Da valutare diventa Da controllare. Gli identificativi delle schede GitHub restano uguali. Le versioni precedenti dell’app non possono aprire lo schema 2: conserva il backup precedente prima di aggiornare. Il nuovo server Python deve essere aggiornato insieme ai file web.
 
-Per aggiornare, esporta un backup completo, sostituisci i file del programma conservando data e downloads e riavvia il server. Per GitHub Pages pubblica l’intero ZIP; non sovrapporre una seconda trasformazione PWA.
+Per aggiornare, esporta un backup completo e pubblica l’intero ZIP con Pubblica; non sovrapporre una seconda trasformazione PWA.
 
 ## Novità 1.3.1: errori spiegati e log
 
@@ -88,12 +88,12 @@ Le istruzioni specifiche di Google Cloud sono nella schermata Impostazioni. Le d
 - Il controllo GitHub conserva le descrizioni personali. I rapporti salvati sono consultabili nella scheda.
 - Corretta la perdita di seedVersion nel server: le cancellazioni dei progetti predefiniti restano valide dopo il riavvio.
 - Uscita con file salvato; copia Drive facoltativa, oppure obbligatoria se spunti la relativa opzione.
-- Ricarica archivio locale permette di recuperare dai conflitti fra finestre senza disabilitare il controllo di revisione.
+
 - La scelta del file su disco sostituisce anche la vecchia copia di emergenza, evitando richieste di recupero ripetute.
 
 ### Aggiornamento dalla versione precedente
 
-Prima esporta un file completo. Estrai lo ZIP e sostituisci i file del programma, conservando le cartelle data e downloads. Riavvia il server. Per GitHub Pages carica il pacchetto completo con Pubblica e riapri l’app dopo l’aggiornamento.
+Prima esporta un file completo, poi pubblica l’intero ZIP con Pubblica.
 
 I nomi del database e lo schema JSON restano uguali. La versione precedente del server non conservava seedVersion: se disponibile viene recuperata da una copia browser con le stesse schede. Se manca una copia confrontabile, i vecchi archivi senza versione ricevono una sola integrazione dei progetti predefiniti; le cancellazioni successive sono rispettate. Eventuali dati già sovrascritti dalla versione precedente richiedono il recupero da un backup.
 
@@ -106,95 +106,90 @@ I nomi del database e lo schema JSON restano uguali. La versione precedente del 
 
 Il catalogo ha ora un archivio principale su file JSON e una copia completa su Google Drive. Il browser conserva una copia di emergenza; non è l’unico posto in cui conservare il lavoro.
 
-## Avvio e archivio locale
+## Salvataggio manuale (dalla 1.9.0)
 
-1. Estrai tutto lo ZIP sul PC. Python 3.10+ è l’unico requisito dell’assistente locale.
-2. Avvia AVVIA_WINDOWS.bat. Si apre http://localhost:8765. Mantieni aperta la finestra del server.
-3. Al primo avvio premi **Salva file completo**. Viene creato **data/catalogo.json**, con tutte le schede e la configurazione non segreta.
-4. Ogni modifica successiva viene scritta automaticamente nello stesso file. Il salvataggio è atomico: viene preparato un temporaneo, scaricato sul disco e sostituito il file completo soltanto a scrittura riuscita.
-5. Prima di ogni sostituzione viene conservata la versione precedente in **data/storico**. La cartella non viene ripulita automaticamente: puoi archiviarla e gestirne lo spazio.
-6. All’avvio successivo il programma rilegge il file su disco. Se la copia di emergenza del browser è diversa, propone di recuperarla oppure di usare il file.
-7. Se due finestre modificano lo stesso catalogo, il controllo di revisione blocca la sovrascrittura: esporta un JSON di sicurezza, usa **Backup ed esportazioni → Ricarica archivio locale**, poi riconcilia le modifiche.
+Dalla 1.9.0 non esiste più l'assistente PC (server.py, AVVIA_WINDOWS.bat, avvia.sh): LolloLab è solo browser e PWA.
 
-I file data non vengono serviti come risorse pubbliche dal server. Per fare un backup manuale puoi copiare l’intera cartella data. Puoi anche tenere il programma in una cartella sincronizzata da Google Drive per desktop: la sincronizzazione resta gestita da quel programma, e non sostituisce la conferma del backup diretto nell’app.
+1. Il catalogo vive nel browser, con una copia di emergenza anche in IndexedDB.
+2. Il file lo salvi tu, **a ogni chiusura**: premi **💾 Salva** in alto: scrive il file completo e, se hai collegato Google, anche la copia su Drive. Nei browser che lo permettono si sceglie il file e lo si riscrive; sugli altri parte un download di `Repo_Atlas_catalogo.json` e va confermato dopo averlo controllato.
+3. Lo stato in alto dice «○ Da salvare su file» finché il file non è aggiornato, e torna così a ogni modifica.
+4. Se chiudi la pagina con modifiche non salvate, il browser chiede conferma. L'avviso dipende dal browser e non compare con la chiusura forzata di Android.
+5. Per riprendere il lavoro su un altro dispositivo: **Apri archivio JSON**.
 
-Linux/macOS: esegui python3 server.py nella cartella del progetto.
+Se hai ancora una cartella `data/` della vecchia versione, il suo `catalogo.json` si apre con **Apri archivio JSON**: il formato è lo stesso.
 
-## Salva ed esci
+## Come chiudere
 
-Il pulsante apre due passaggi distinti:
+**💾 Salva** (in alto, sempre visibile) fa tutto in un colpo:
 
-- **1. Salva file completo**: verifica il salvataggio su disco; nell’uso statico propone un file JSON scelto dall’utente.
-- **2. Salva su Drive**: passaggio facoltativo; autorizza Google e carica un nuovo JSON completo con data e ora nel nome.
-- **Concludi sessione**: disponibile quando il file corrisponde alla versione corrente. Spuntando “Richiedi anche una copia Drive” occorre anche quel backup. Il messaggio finale invita a chiudere la scheda; l’app non termina il server.
+- **File completo**: nei browser compatibili scrive il file scelto da te; sugli altri parte un download da confermare dopo averlo controllato.
+- **Drive**: solo se hai collegato Google (Impostazioni → Google Drive): carica anche un nuovo JSON completo con data e ora nel nome.
+- Lo stato «○ Da salvare su file» in alto resta finché il file non corrisponde alla versione corrente.
 
 Il backup completo comprende sempre tutte le schede, anche quelle nascoste dai filtri o non selezionate: descrizioni, categorie, stati, priorità, note, metadati GitHub, README, analisi IA, rapporti di controllo, provider/modello e Client ID Google.
 
-Sono esclusi chiavi API, token GitHub, credenziali OAuth, file ZIP scaricati in downloads e l’intero storico delle versioni. Per conservare anche ZIP e storico copia la cartella del programma. Le chiavi vanno reinserite nella sessione successiva.
+Sono escluse chiavi API, token GitHub e credenziali OAuth. Le chiavi vanno reinserite nella sessione successiva.
 
 Il browser può mostrare un avviso alla chiusura se mancano salvataggi o ci sono operazioni in corso. Questo avviso non è garantito su tutti i dispositivi, specialmente dopo una chiusura forzata su Android: non viene mai avviato un caricamento Drive affidandosi all’ultimo istante di chiusura.
 
-## Google Drive e Sheets
+## Google Drive
 
 L’app scaricata non eredita l’accesso Drive di ChatGPT. Per attivare i pulsanti diretti:
 
-1. In un tuo progetto Google Cloud abilita **Google Drive API**; abilita anche **Google Sheets API** se vuoi esportare in Sheets.
+1. In un tuo progetto Google Cloud abilita **Google Drive API**.
 2. Configura consenso OAuth ed eventuali utenti di test.
-3. Crea un Client ID OAuth per applicazione web, autorizzando l’origine esatta dell’app: http://localhost:8765 per l’avvio locale oppure l’origine HTTPS di GitHub Pages.
+3. Crea un Client ID OAuth per applicazione web, autorizzando l’origine esatta dell’app: l’origine HTTPS di GitHub Pages (https://baudinolorenzo73.github.io).
 4. Inserisci il Client ID in Configurazione e salva. Non serve un client secret.
-5. Usa Backup completo su Drive o Salva ed esci e scegli l’account nel consenso Google.
+5. Premi 💾 Salva e scegli l’account nel consenso Google.
 
 Per il backup viene richiesto il permesso drive.file, limitato ai file creati/aperti tramite questa app. Ogni backup crea un nuovo JSON datato in Il mio Drive. La creazione e la dimensione del file vengono verificate con una rilettura dei metadati prima di mostrare **copia confermata**. Se rete o autorizzazione falliscono, Drive rimane **backup da fare** e la copia locale resta disponibile.
 
 Per riaprire un backup remoto scaricalo da Drive e usa **Apri archivio JSON**. Non esiste ancora una ricerca dei backup Drive dentro Repo Atlas.
 
-Le esportazioni **Google Sheets** restano rapporti separati: creare un foglio non sostituisce il backup JSON completo. In alternativa carica un XLSX in Drive e aprilo con Google Sheets.
+Per un foglio di calcolo esporta in **Excel (.xlsx)**: si apre anche con Google Sheets dopo averlo caricato su Drive.
 
 ## Uso statico, GitHub Pages e telefoni
 
-Il catalogo funziona anche senza il server Python. **Salva file completo** usa il selettore di file nei browser compatibili; la scrittura viene confermata dopo la chiusura del file. Sugli altri browser avvia un download e chiede di verificare che il JSON sia effettivamente presente nei Download prima di marcarlo come salvato. L’app non può verificare da sola un download standard.
+Il catalogo non ha bisogno di nessun server. **Salva file completo** usa il selettore di file nei browser compatibili; sugli altri avvia un download e chiede di verificare che il JSON sia nei Download.
 
 All’apertura, **Apri archivio JSON** ricarica il file completo sostituendo le schede in lavoro dopo conferma. **Importa JSON** rimane una fusione, con sostituzione dei duplicati. Prima di sostituire un archivio, conserva un backup se vuoi mantenere il lavoro corrente.
 
 I permessi per i file scelti non sono mantenuti automaticamente dopo la chiusura. Il browser conserva una copia di emergenza del catalogo; cancellare i dati del browser non cancella i file JSON già salvati.
 
-Il pacchetto è pronto per Pubblica: file web alla radice, percorsi relativi, manifest, icone e service worker. Non attivare un’altra trasformazione PWA. Il server Python non viene eseguito da GitHub Pages. IA e controlli degli ZIP richiedono l’avvio locale; archivio, esportazioni, GitHub e OAuth Google funzionano nel browser con i relativi requisiti di rete.
+Il pacchetto è pronto per Pubblica: file web alla radice, percorsi relativi, manifest, icone e service worker. Non attivare un’altra trasformazione PWA. Archivio, esportazioni, GitHub, IA dal browser e OAuth Google funzionano da GitHub Pages con le rispettive configurazioni.
 
-La cache conserva l’interfaccia offline dopo il primo caricamento HTTP/HTTPS; non conserva token o risposte delle API locali. Con Ollama e README già salvati, l’analisi può funzionare senza Internet. GitHub, Drive e IA cloud richiedono rete.
+La cache conserva l’interfaccia offline dopo il primo caricamento HTTP/HTTPS. GitHub, Drive e IA cloud richiedono rete; con Ollama sul PC l’analisi funziona anche senza Internet.
 
 ## IA e controllo repository
 
-Configurazione: scegli Ollama locale, Groq, OpenRouter o OpenAI API e inserisci il nome esatto del modello. Con Ollama verifica i modelli disponibili con ollama list. Non vengono scaricati modelli automaticamente.
+Configurazione: scegli Ollama locale, Groq, OpenRouter o OpenAI API e inserisci il nome esatto del modello. La richiesta parte dal browser: Groq, OpenRouter e OpenAI funzionano con la tua chiave (solo in sessione). Con Ollama il browser deve poter raggiungere http://127.0.0.1:11434: avvialo con OLLAMA_ORIGINS impostato all’indirizzo dell’app (es. https://baudinolorenzo73.github.io), altrimenti la richiesta viene bloccata.
 
 **Controlla GitHub** legge descrizione, README, stelle, licenza, linguaggio, ultimo push e stato archiviato. Un token GitHub facoltativo aumenta i limiti delle API.
 
 **Spiegami con IA** invia al provider README e metadati della scheda dopo conferma. Non è un audit di sicurezza e non equivale a eseguire il progetto.
 
-**Scarica e controlla** salva lo ZIP pubblico del commit corrente nella cartella downloads, riporta commit e SHA256, rileva tecnologie e verifica fino a 80 file JSON/Python. Limiti: 25 MB compressi, 150 MB decompressi, 15000 voci, file di controllo fino a 1 MB. Il rapporto è incluso nel successivo archivio completo.
-
-Se è presente index.html offre un’anteprima isolata con rete e permessi bloccati. Non installa dipendenze né esegue comandi del repository. Android, Zepp, Docker e progetti che richiedono build hanno ancora bisogno di compilazione e prova manuale.
+Il vecchio «Scarica e controlla» (ZIP del repository) è stato tolto con l’assistente PC: i rapporti già salvati nelle schede restano visibili.
 
 ## Esportazioni e compatibilità
 
 - **File completo / Drive**: archivio completo e configurazione non segreta, indipendente dai filtri.
-- **Esporta selezione JSON, Excel, CSV, PDF e Sheets**: usano le schede selezionate; senza selezione usano i risultati filtrati.
+- **Esporta selezione JSON, Excel e PDF**: usano le schede selezionate; senza selezione usano i risultati filtrati.
 - XLSX: vero Office Open XML senza librerie esterne, celle testuali; massimo Excel 32767 caratteri per cella. Il JSON conserva anche i testi più lunghi.
 - PDF: Stampa / PDF apre la stampa del browser, quindi scegli Salva come PDF. Comprende descrizioni, note e analisi, senza README.
 - Importazioni: JSON massimo 10 MB e 5000 schede. I JSON v1.0 sono compatibili; le chiavi API non vengono importate.
 
 ## Verifiche e limiti
 
-Verificati sintassi JavaScript/Python, salvataggio e rilettura JSON, storico, blocco dei conflitti tra revisioni, validazione, esclusione delle chiavi e completezza del backup anche con selezioni attive. Restano validi i test XLSX e del servizio locale della versione 1.0.
+Verificati sintassi JavaScript, salvataggio e rilettura JSON, validazione, esclusione delle chiavi, completezza del backup, analisi IA dal browser con provider simulato e avviso di chiusura.
 
 Il salvataggio Drive/OAuth e le chiamate ai modelli IA richiedono collaudo con credenziali reali dell’utente. Non sono presentati come già verificati con un account reale. Anche installazione PWA e comportamento specifico del selettore di file dipendono dal browser usato.
 
 Fonti di riferimento del progetto originale: https://developers.google.com/workspace/drive/api/guides/manage-uploads ; https://developers.google.com/workspace/drive/api/guides/api-specific-auth ; https://developer.mozilla.org/en-US/docs/Web/API/Window/showSaveFilePicker ; https://developer.mozilla.org/en-US/docs/Web/Events/beforeunload
 
 
-## Test della versione 1.3.0
+## Test
 
-- Python: `python -m unittest discover -s tests`.
-- JavaScript: `node tests/app.cjs` (Node 18+).
-- Browser, in un ambiente con Playwright e Chromium: `node tests/ui.cjs`. La variabile CHROMIUM_PATH permette di indicare un eseguibile installato.
+- `node tests/app.cjs` (Node 18+), `node tests/sw.cjs`
+- Con Playwright e Chromium: `node tests/api.cjs` e `node tests/ia.cjs` (IA dal browser e salvataggio manuale).
 
-Il rapporto VERIFICA.md distingue controlli automatici eseguiti da prove ancora da fare. Non sono state usate credenziali reali per OAuth o IA.
+VERIFICA.md distingue i controlli automatici da quelli ancora da fare. Non sono state usate credenziali reali per OAuth o IA.

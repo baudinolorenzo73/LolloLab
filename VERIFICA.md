@@ -1,4 +1,25 @@
-# Verifica Repo Atlas 1.5.0 + ScreenAI 1.8
+# Verifica
+
+## Controlli 1.10.0 (ristrutturazione)
+- node tests/app.cjs, sw.cjs, api.cjs, ia.cjs e menu.cjs superati.
+- menu.cjs: 3 voci + «+ Aggiungi», idea/link/foto, Cerca dentro Archivio, Impostazioni dal backup, esportazioni JSON/Excel/PDF, 💾 Salva (solo file senza Google; file + Drive con Google, con Drive simulato), nessuno scorrimento orizzontale a 390 px.
+- Non verificato con un account reale: il backup Drive dal nuovo pulsante Salva.
+
+## Controlli 1.9.0 (assistente PC rimosso)
+- node tests/app.cjs, tests/sw.cjs, tests/api.cjs e tests/ia.cjs superati.
+- IA dal browser provata con provider simulato (Groq): intestazione Authorization, corpo della richiesta, immagine, errori mappati; nessuna chiamata a ./api/ né a localhost:8765.
+- Salvataggio manuale: download JSON, conferma, stato «Da salvare su file» a ogni modifica, avviso di beforeunload in Chromium.
+- Non verificato con servizi reali: Groq/OpenRouter/OpenAI/Ollama con chiavi vere (CORS e OLLAMA_ORIGINS da provare), Drive/OAuth, chiusura forzata su Android.
+- Rimossi i test Python e tests/ui.cjs, che dipendevano da server.py.
+
+## Nuovi controlli 1.8.0 (API gratuite fuse in LolloLab)
+
+- Menu «API gratuite»: riepilogo trekking, elenco public-apis con ricerca e filtri, schede API pubbliche / API IA, ultima scheda ricordata.
+- Preferite salvate dalla vecchia app «api» (chiavi pubblica.api.* e pubblica.ai.*) ritrovate.
+- «📌 Archivia» da API pubblica, trekking e provider IA: editor compilato, categoria corretta, scheda salvata nell'archivio.
+- Tema scuro di LolloLab applicato alla sezione; nessuno scorrimento orizzontale a 390 px; nessun errore JavaScript.
+- api-catalogo.js nella cache del service worker e tra i file serviti dall'assistente PC (server.py).
+- Comando: node tests/api.cjs (Playwright).
 
 ## Nuovi controlli 1.5.0
 
@@ -62,4 +83,4 @@ Data: 7 novembre 2026. Base: main, commit 717885ff5ac7002c39e9579d8e4d7406aada2f
 - In assenza di una copia browser confrontabile, un vecchio file senza seedVersion viene integrato una volta; da quel momento le cancellazioni sono conservate.
 - Pacchetto completo per Pubblica/GitHub Pages. Non è stato pubblicato né modificato il repository remoto.
 
-Comandi: python -m unittest discover -s tests; node tests/app.cjs; node tests/sw.cjs.
+Comandi: node tests/app.cjs; node tests/sw.cjs; node tests/api.cjs; node tests/ia.cjs.

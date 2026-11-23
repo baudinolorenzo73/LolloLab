@@ -20,8 +20,6 @@ In caso di problema: Esporta log diagnostico e invia il JSON insieme al pulsante
 | SELECTION_MISSING | Nessun repository selezionato | Spunta almeno una scheda nel catalogo e ripeti l’operazione. Cambiare filtro annulla le selezioni precedenti. |
 | ARCHIVE_VERSION | Versione JSON non supportata | Questa versione importa gli schemi 1, 2 e 3. Aggiorna Repo Atlas oppure scegli un backup compatibile. Il catalogo in lavoro resta invariato. |
 | ARCHIVE_DUPLICATE | Repository duplicati nel file JSON | Il file contiene più schede per lo stesso repository. Correggi i duplicati oppure usa un backup valido prima di importare. |
-| ZIP_LIMIT | Archivio ZIP oltre i limiti | Il controllo ammette al massimo 25 MB compressi, 150 MB decompressi e 15000 file. Valuta il repository manualmente in un ambiente adatto. |
-| ZIP_INVALID | Archivio ZIP non supportato | Il file scaricato è vuoto, danneggiato o contiene percorsi/link non ammessi. Non è stato eseguito codice del repository. |
 | AI_KEY_MISSING | Manca la chiave API IA | Il provider cloud richiede una chiave. Apri Impostazioni, scegli il provider, inserisci la sua chiave API e salva. La chiave resta soltanto nella sessione: va reinserita dopo aver riaperto l’app. Ollama locale non richiede una chiave. |
 | AI_MODEL_MISSING | Manca il modello IA | Inserisci in Impostazioni il nome esatto di un modello disponibile presso il provider scelto. Con Ollama usa il nome di un modello già installato sul PC. |
 | AI_AUTH | Chiave IA non accettata | La chiave potrebbe essere errata, revocata o appartenere a un altro provider. Genera o copia la chiave corretta dal tuo account e reinseriscila. |
@@ -31,10 +29,7 @@ In caso di problema: Esporta log diagnostico e invia il JSON insieme al pulsante
 | AI_RATE | Troppe richieste al servizio IA | Attendi qualche minuto e riprova con meno repository. Controlla i limiti del provider. Non è necessariamente un problema di credito. |
 | AI_REQUEST | Richiesta IA non accettata | Il modello potrebbe non supportare i parametri o la quantità di testo. Per uno screenshot deve supportare anche le immagini: una chiave verificata non basta. Prova un modello vision compatibile con chat/completions. |
 | AI_EMPTY | Il modello non ha restituito testo | Prova di nuovo o scegli un altro modello. L’analisi precedente, se esiste, resta conservata. |
-| LOCAL_REQUIRED | Serve l’assistente sul PC | Per analisi IA e controllo ZIP avvia AVVIA_WINDOWS.bat e usa l’indirizzo mostrato nella finestra. GitHub Pages non esegue il server Python. Il catalogo resta utilizzabile. |
 | OLLAMA_OFFLINE | Ollama locale non raggiungibile | Avvia Ollama sul PC e verifica che risponda sulla porta 11434. Il nome del modello deve corrispondere a uno già installato. Per Ollama non serve una chiave API cloud. |
-| LOCAL_AUTH | Collegamento al server locale scaduto | Il server potrebbe essere stato riavviato. Esporta prima un JSON di sicurezza, poi ricarica la pagina per ristabilire il collegamento. |
-| LOCAL_OFFLINE | Assistente locale non raggiungibile | Controlla che la finestra AVVIA_WINDOWS.bat sia aperta e che tu stia usando il suo indirizzo. Le modifiche in lavoro non risultano confermate su disco. |
 | GOOGLE_CLIENT_MISSING | Manca il Client ID Google | Apri Impostazioni e inserisci un Client ID OAuth per applicazione web. Non è una chiave API né un token di accesso. Poi usa Collega Google. |
 | GOOGLE_CLIENT_INVALID | Client ID Google non valido | Usa il Client ID OAuth per applicazione web che termina con .apps.googleusercontent.com. Non incollare client secret, API key o access token in questo campo. |
 | GOOGLE_CONFIG | Configurazione Google non accettata | In Google Cloud verifica il Client ID web, le origini JavaScript autorizzate e la schermata di consenso. Se il progetto è in test, controlla gli utenti ammessi. |
@@ -50,7 +45,6 @@ In caso di problema: Esporta log diagnostico e invia il JSON insieme al pulsante
 | GOOGLE_STORAGE | Spazio o limite di archiviazione Google raggiunto | Controlla lo spazio disponibile e i limiti del tuo account Drive. Conserva intanto il backup JSON sul dispositivo. |
 | GOOGLE_LIBRARY | Accesso Google non caricato | Controlla Internet e gli eventuali blocchi del browser per accounts.google.com. Poi riprova il collegamento. |
 | GOOGLE_VERIFY | Backup Drive non verificato | Il file potrebbe essere stato creato, ma la conferma è incompleta. Controlla Drive prima di riprovare per evitare copie duplicate. Il backup rimane da verificare. |
-| SHEETS_PARTIAL | Foglio creato, dati non confermati | Apri Google Sheets e controlla il foglio più recente. La creazione è riuscita, ma il caricamento dei dati è fallito. Esporta intanto un XLSX. |
 | GITHUB_AUTH | Token GitHub non accettato | Il token è facoltativo per repository pubblici. Reinserisci un token valido oppure svuota il campo per continuare senza token, con limiti di richieste inferiori. |
 | GITHUB_TOKEN_MISSING | Non hai inserito un token GitHub | Per verificarlo incolla il token in Impostazioni. Per usare i repository pubblici puoi anche lasciare il campo vuoto: in quel caso non c’è un token da verificare. |
 | GITHUB_NOT_FOUND | Repository non trovato o non accessibile | Controlla proprietario e nome. Un repository privato o senza permessi può apparire come non trovato. Il controllo ZIP di questa app supporta soltanto repository pubblici. |
@@ -60,7 +54,6 @@ In caso di problema: Esporta log diagnostico e invia il JSON insieme al pulsante
 | TIMEOUT | Il servizio non ha risposto in tempo | Controlla la connessione e riprova. Con Ollama il primo avvio del modello può essere lento: verifica che il PC abbia memoria sufficiente. |
 | SERVICE_UNAVAILABLE | Servizio temporaneamente non disponibile | Attendi e riprova. I dati già salvati nel catalogo restano disponibili. |
 | RESPONSE_INVALID | Risposta del servizio non valida | Il servizio ha restituito un formato inatteso. Controlla che il server locale sia aggiornato, poi riprova. |
-| SAVE_CONFLICT | Archivio modificato in un’altra finestra | Esporta un JSON di sicurezza. In Backup ed esportazioni usa Ricarica archivio locale; poi riconcilia le modifiche. Il file esistente non viene sovrascritto. |
 | FILE_PERMISSION | Permesso di scrittura negato | Consenti l’accesso al file o scegli una cartella scrivibile. Sul PC controlla i permessi della cartella del programma. Il salvataggio non è confermato. |
 | DISK_FULL | Spazio su disco esaurito | Libera spazio e ripeti il salvataggio. Se possibile esporta un JSON su un altro supporto. |
 | FILE_CANCELLED | Scelta del file annullata | Nessun nuovo file è stato confermato. Riprova Salva file completo quando sei pronto. |

@@ -4,9 +4,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#102d2c"><title>LolloLab · Idee e progetti</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg"><script src="./appearance.js"></script><link rel="stylesheet" href="./styles.css"></head>
 <body>
-<header><div><div class="eyebrow">Archivio di idee e progetti da riutilizzare · v1.7.1</div><h1>LolloLab</h1><p>Raccogli idee, link e repository da controllare. Ritrova cosa puoi riutilizzare.</p></div><div><div id="connection" class="status">Catalogo nel browser</div><div class="header-actions"><button id="themeBtn">☾ Scuro</button><button id="appUpdateBtn">Aggiorna app</button><button id="reloadAppBtn" hidden>Ricarica app</button></div><button id="settingsBtn" hidden>Impostazioni</button></div></header>
+<header><div><div class="eyebrow">Archivio di idee, progetti e API da riutilizzare · v1.10.0</div><h1>LolloLab</h1><p>Raccogli idee, link, repository e API gratuite da controllare. Ritrova cosa puoi riutilizzare.</p></div><div><div id="connection" class="status">Catalogo nel browser</div><div class="header-actions"><button id="saveBtn" class="primary">💾 Salva</button><button id="themeBtn">☾ Scuro</button><button id="appUpdateBtn">Aggiorna app</button><button id="reloadAppBtn" hidden>Ricarica app</button></div></div></header>
 <nav class="app-nav" aria-label="Navigazione principale">
-<button class="active" data-view="catalog" aria-pressed="true">Archivio</button><button data-view="discover" aria-pressed="false">Cerca web / GitHub</button><button id="navAddBtn">+ Aggiungi</button><button id="captureBtn">Screenshot / ScreenAI</button><button data-view="backup" aria-pressed="false">Backup ed esportazioni</button><button id="navSettingsBtn">Impostazioni</button>
+<button class="active" data-view="catalog" aria-pressed="true">Archivio</button><button data-view="api" aria-pressed="false">API gratuite</button><button data-view="backup" aria-pressed="false">Impostazioni e backup</button><button id="navAddBtn" class="primary">+ Aggiungi</button>
 </nav>
 <main>
 <div id="message" role="status" aria-live="polite"></div><div id="errorActions" class="actions" hidden><button id="errorSettingsBtn">Apri impostazioni</button><button id="errorLogBtn">Esporta log diagnostico</button></div>
@@ -21,7 +21,7 @@
 <select id="priority" aria-label="Priorità"><option value="">Ogni priorità</option><option>Alta</option><option>Media</option><option>Bassa</option></select>
 <select id="sort" aria-label="Ordina"><option value="priority">Ordina: priorità</option><option value="name">Ordina: nome</option><option value="stars">Ordina: stelle</option></select>
 </div>
-<div class="toolbar"><button id="addBtn" class="primary">+ Nuova idea</button><button id="quickCameraBtn">📷 Scatta e archivia</button><button id="quickGalleryBtn">🖼 Dalla galleria</button><button id="newIdeaBtn">+ Idea</button><button id="newWebBtn">+ Link web</button><button id="checkAllUpdatesBtn">Aggiorna GitHub</button><button id="selectAll">Seleziona risultati</button><button id="clearSelection" hidden>Deseleziona tutto</button></div>
+<div class="toolbar"><button id="discoverBtn">🔎 Cerca nuove idee</button><button id="checkAllUpdatesBtn">Aggiorna GitHub</button><button id="selectAll">Seleziona risultati</button><button id="clearSelection" hidden>Deseleziona tutto</button></div>
 <div id="bulkActions" class="bulk-actions" hidden><strong><span id="selectedCount">0</span> selezionati</strong><button id="refreshAll">Controlla aggiornamenti selezionati</button><button id="analyzeAll">Analizza con IA</button></div>
 <p class="muted" id="scope"></p>
 </div>
@@ -29,22 +29,114 @@
 <p id="modeHelp" class="mode-help"></p>
 </section>
 <section id="discoverView" aria-label="Cerca sul web e su GitHub" hidden>
-<h2>Cerca nuove idee e progetti</h2><p class="muted">Scopri una risorsa, archiviala e annota come vorresti riutilizzarla.</p>
+<button id="discoverBackBtn" type="button">← Torna all’Archivio</button><h2>Cerca nuove idee e progetti</h2><p class="muted">Scopri una risorsa, archiviala e annota come vorresti riutilizzarla.</p>
 <section class="panel"><label>Che cosa cerchi?<input id="discoveryQuery" placeholder="Es. mappe offline, GPX, Zepp OS, assistente IA…"></label>
-<div class="actions"><button id="githubSearchBtn" class="primary">Cerca su GitHub</button><select id="webEngine" aria-label="Motore di ricerca web"><option value="duckduckgo">DuckDuckGo</option><option value="google">Google</option></select><button id="webSearchBtn">Cerca sul web ↗</button></div><p class="help">GitHub: risultati qui sotto e pulsante Archivia da controllare. Web: ricerca in una nuova scheda; copia il link utile e usa Aggiungi → Link web. Non viene eseguito codice trovato.</p></section>
+<div class="actions"><button id="githubSearchBtn" class="primary">Cerca su GitHub</button><select id="webEngine" aria-label="Motore di ricerca web"><option value="duckduckgo">DuckDuckGo</option><option value="google">Google</option></select><button id="webSearchBtn">Cerca sul web ↗</button></div><p class="help">GitHub: risultati qui sotto e pulsante Archivia da controllare. Web: ricerca in una nuova scheda; copia il link utile e usa + Aggiungi → Link web. Non viene eseguito codice trovato.</p></section>
 <p id="discoveryStatus" role="status" aria-live="polite"></p><div id="discoveryResults"></div><button id="moreGithubBtn" hidden>Altri risultati GitHub</button>
 </section>
+<section id="apiView" aria-label="API gratuite" hidden>
+<h2>API gratuite</h2><p class="muted">API pubbliche da usare nei tuoi progetti, il riepilogo per trekking e GPX e i provider di intelligenza artificiale con piano gratuito. Con 📌 archivi una API come scheda da valutare.</p>
+<div id="apiTabs" class="api-tabs" role="tablist" aria-label="Sezioni API"><button type="button" role="tab" id="sc-api" data-sez="api" aria-selected="true">API pubbliche e trekking</button><button type="button" role="tab" id="sc-ai" data-sez="ai" aria-selected="false">API IA gratuite</button></div>
+<section id="v-api">
+  <div class="panel apicard" id="api-trek">
+    <h2>Trekking e GPX: il riepilogo</h2>
+    <p class="nota" style="margin:0 0 6px">Le API utili per tracce, sentieri, quota e meteo in montagna, raccolte a mano. «Prova ora» fa una richiesta vera dal tuo dispositivo: è l'unico modo per sapere se una API si può chiamare da una pagina o da un'app.</p>
+    <div class="riga"><button type="button" class="primario" id="api-trek-tutte">▶ Prova tutte</button></div>
+    <div id="api-trek-lista"></div>
+  </div>
+  <div class="panel apicard">
+    <h2>API gratuite</h2>
+    <p class="nota" style="margin:0 0 8px">Elenco di API pubbliche dal progetto <a href="https://github.com/public-apis/public-apis" target="_blank" rel="noopener">public-apis</a>,
+      con in più le tue. Per le pagine HTML e le app APK scegli quelle <b>senza chiave</b> e con <b>CORS sì</b>: sono le uniche che il browser lascia chiamare direttamente.</p>
+    <input type="text" id="api-q" placeholder="Cerca: meteo, quota, piante, mappe…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Cerca nelle API">
+    <select id="api-cat" aria-label="Categoria"></select>
+    <div class="api-filtri">
+      <label class="chk"><input type="checkbox" id="api-senza"> Senza chiave</label>
+      <label class="chk"><input type="checkbox" id="api-cors"> CORS sì</label>
+      <label class="chk"><input type="checkbox" id="api-https"> HTTPS</label>
+      <label class="chk"><input type="checkbox" id="api-pref"> ★ Preferite</label>
+      <label class="chk"><input type="checkbox" id="api-mie"> Solo mie</label>
+    </div>
+    <p class="nota" id="api-conta" aria-live="polite"></p>
+    <div id="api-lista"></div>
+    <button type="button" id="api-altre" hidden>Mostra altre</button>
+  </div>
+  <div class="panel apicard">
+    <h2>Aggiorna l'elenco</h2>
+    <p class="nota" id="api-stato" style="margin:0 0 8px"></p>
+    <div class="riga">
+      <button type="button" class="primario" id="api-agg">🔄 Aggiorna da GitHub</button>
+      <button type="button" id="api-orig">Torna alla copia inclusa</button>
+    </div>
+    <div id="api-esito" aria-live="polite"></div>
+    <details class="api-aggiungi">
+      <summary>➕ Aggiungi una API tua</summary>
+      <label for="api-n-nome">Nome</label><input type="text" id="api-n-nome" autocomplete="off">
+      <label for="api-n-url">Indirizzo (https://…)</label><input type="text" id="api-n-url" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label for="api-n-desc">A cosa serve</label><input type="text" id="api-n-desc" autocomplete="off">
+      <label for="api-n-cat">Categoria</label><input type="text" id="api-n-cat" list="api-cat-lista" autocomplete="off"><datalist id="api-cat-lista"></datalist>
+      <div class="riga">
+        <div><label for="api-n-auth">Chiave</label>
+          <select id="api-n-auth"><option value="N">Nessuna</option><option value="K">apiKey</option><option value="O">OAuth</option></select></div>
+        <div><label for="api-n-cors">CORS</label>
+          <select id="api-n-cors"><option value="?">Non so</option><option value="S">Sì</option><option value="N">No</option></select></div>
+      </div>
+      <div class="riga" style="margin-top:10px"><button type="button" class="primario" id="api-n-ok">Salva nell'elenco</button></div>
+      <div id="api-n-esito" aria-live="polite"></div>
+    </details>
+    <div class="riga" style="margin-top:12px"><button type="button" id="api-copia-pref">📋 Copia le preferite</button></div>
+  </div>
+</section>
+
+<!-- ===================== API IA GRATUITE ===================== -->
+<section id="v-ai" hidden>
+  <div class="panel apicard">
+    <h2>API IA gratuite</h2>
+    <p class="nota">Provider che offrono modelli di intelligenza artificiale con un piano gratuito. I limiti possono cambiare: controlla sempre le condizioni sul sito ufficiale prima di collegare un progetto.</p>
+    <input type="text" id="ai-q" placeholder="Cerca: Gemini, Groq, immagini, codice…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Cerca provider IA">
+    <select id="ai-modalita" aria-label="Modalità IA">
+      <option value="">Tutte le modalità</option>
+      <option value="text">Testo</option><option value="reasoning">Ragionamento</option><option value="code">Codice</option>
+      <option value="image">Immagini</option><option value="vision">Visione</option><option value="audio">Audio</option>
+      <option value="video">Video</option><option value="embedding">Embedding</option>
+    </select>
+    <div class="api-filtri">
+      <label class="chk"><input type="checkbox" id="ai-no-carta"> Nessuna carta</label>
+      <label class="chk"><input type="checkbox" id="ai-no-telefono"> Nessun telefono</label>
+      <label class="chk"><input type="checkbox" id="ai-preferiti"> ★ Preferiti</label>
+    </div>
+    <p class="nota" id="ai-conta" aria-live="polite"></p>
+    <div id="ai-lista" class="ai-griglia"></div>
+  </div>
+  <div class="panel apicard">
+    <h2>Aggiorna la lista IA</h2>
+    <p class="nota" id="ai-stato"></p>
+    <div class="riga">
+      <button type="button" class="primario" id="ai-aggiorna">🔄 Aggiorna da GitHub</button>
+      <button type="button" id="ai-originale">Torna alla copia inclusa</button>
+      <a class="btn" href="https://github.com/open-free-llm-api/awesome-freellm-apis" target="_blank" rel="noopener noreferrer">Apri la fonte</a>
+    </div>
+    <div id="ai-esito" aria-live="polite"></div>
+    <details class="api-aggiungi">
+      <summary>Come funziona l’aggiornamento</summary>
+      <p class="nota">LolloLab scarica il README del progetto, legge le tabelle dei provider gratuiti e salva l’elenco sul dispositivo. Non scarica né conserva chiavi API. Se GitHub non è raggiungibile o la tabella cambia formato, resta disponibile l’ultima copia valida.</p>
+    </details>
+  </div>
+</section>
+</section>
 <section id="backupView" aria-label="Backup ed esportazioni" hidden>
-<h2>Backup ed esportazioni</h2><p class="muted">Il backup conserva tutto l’archivio. Le esportazioni producono un elenco da consultare o condividere.</p>
+<h2>Impostazioni e backup</h2><p class="muted">Salvataggio dell’archivio, esportazioni e collegamenti (IA, GitHub, Google).</p>
 <div class="backup-grid">
-<section class="panel"><h3>Archivio completo</h3><p id="saveStatus" role="status">Archivio da salvare</p><div class="actions"><button id="saveFileBtn" class="primary">Salva file completo</button><button id="saveDriveBtn">Backup su Drive</button><button id="exitBtn">Salva ed esci</button></div><p class="help">Comprende tutte le schede, note, README, analisi e rapporti, anche fuori dai filtri. Le chiavi API sono escluse.</p></section>
-<section class="panel"><h3>Apri o recupera</h3><div class="actions"><button id="openArchiveBtn">Apri archivio JSON</button><button id="importBtn">Unisci da JSON</button><button id="reloadLocalBtn" hidden>Ricarica archivio locale</button></div><p class="help">Apri sostituisce l’archivio in lavoro. Unisci aggiunge le schede e, dopo conferma, sostituisce i duplicati. Ricarica risolve i conflitti rileggendo il file sul PC.</p></section>
-<section class="panel"><h3>Esporta un elenco</h3><p id="exportScope" class="muted"></p><div class="actions"><button id="jsonBtn">JSON schede</button><button id="xlsxBtn">Excel .xlsx</button><button id="csvBtn">CSV</button><button id="pdfBtn">Stampa / PDF</button><button id="sheetsBtn">Google Sheets ↗</button></div><p class="help">Con una selezione esporti solo le schede scelte. Senza selezione esporti i risultati filtrati. Per ripristinare tutto usa il backup completo.</p></section>
-<section class="panel"><h3>Assistenza e log</h3><p>Se qualcosa non funziona, esporta il registro e invialo insieme al nome del pulsante premuto.</p><button id="exportLogBtn">Esporta log diagnostico</button><p class="help">Registro automatico degli ultimi 300 eventi del browser e degli eventi disponibili del server locale. Esclude chiavi, token, contenuto delle schede e messaggi grezzi dei servizi. Sul PC resta anche data/diagnostica.jsonl.</p></section>
+<section class="panel"><h3>Salvataggio</h3><p id="saveStatus" role="status">Archivio da salvare</p><p class="help">Premi <b>💾 Salva</b> in alto: scrive il file completo (schede, note, README, analisi, rapporti; senza chiavi API) e, se hai collegato Google, anche una copia su Drive. Il catalogo non si salva da solo su file.</p></section>
+<section class="panel"><h3>Impostazioni</h3><p class="help">Provider IA e chiave, token GitHub, collegamento a Google Drive, aspetto.</p><button id="settingsBtn" class="primary">⚙ Apri impostazioni</button></section>
+<section class="panel"><h3>Apri o recupera</h3><div class="actions"><button id="openArchiveBtn">Apri archivio JSON</button><button id="importBtn">Unisci da JSON</button></div><p class="help">Apri sostituisce l’archivio in lavoro. Unisci aggiunge le schede e, dopo conferma, sostituisce i duplicati.</p></section>
+<section class="panel"><h3>Esporta un elenco</h3><p id="exportScope" class="muted"></p><div class="actions"><button id="jsonBtn">JSON schede</button><button id="xlsxBtn">Excel .xlsx</button><button id="pdfBtn">Stampa / PDF</button></div><p class="help">Con una selezione esporti solo le schede scelte. Senza selezione esporti i risultati filtrati. Per ripristinare tutto usa il backup completo.</p></section>
+<section class="panel"><h3>Assistenza e log</h3><p>Se qualcosa non funziona, esporta il registro e invialo insieme al nome del pulsante premuto.</p><button id="exportLogBtn">Esporta log diagnostico</button><p class="help">Registro automatico degli ultimi 300 eventi del browser. Esclude chiavi, token, contenuto delle schede e messaggi grezzi dei servizi; cancellare i dati del sito lo cancella.</p></section>
 </div>
 </section>
-<footer>Salvataggio automatico su file con l’assistente locale. Nel browser resta una copia di emergenza: conserva anche un backup JSON.</footer>
+<footer>Il salvataggio su file è manuale: a ogni chiusura premi «💾 Salva». Nel browser resta una copia di emergenza, ma conserva sempre un backup JSON. · by Lollo ®2026</footer>
 </main>
+<dialog id="addDialog"><div class="dialog-head"><h2>Cosa aggiungi?</h2><button data-close>Chiudi</button></div><div class="add-choices"><button id="addIdeaBtn" class="primary">💡 Idea personale</button><button id="addWebBtn">🔗 Link web o repository GitHub</button><button id="addPhotoBtn">📷 Foto o screenshot</button></div><p class="help">Un link a un repository GitHub viene riconosciuto da solo. Per cercarne di nuovi usa «Cerca nuove idee» in Archivio.</p></dialog>
 <dialog id="captureDialog"><div class="dialog-head"><h2>Screenshot / ScreenAI</h2><button data-close>Chiudi</button></div>
 <p class="help">Carica o incolla una schermata, oppure importa un file .screenai.json con immagine e analisi. Puoi analizzare adesso o archiviare senza IA e valutare in seguito.</p>
 <label>Immagine o esportazione ScreenAI<input id="captureFile" type="file" accept="image/png,image/jpeg,image/webp,.screenai.json,application/json"></label>
@@ -55,8 +147,8 @@
 <label>Analisi o appunti preliminari<textarea id="captureAnalysis" placeholder="Puoi anche aggiungere una nota e analizzare più tardi."></textarea></label>
 <p id="captureFeedback" class="feedback" role="status" aria-live="polite"></p>
 <div class="actions"><button id="analyzeCaptureBtn">Analizza immagine con IA</button><button id="archiveCaptureBtn" class="primary">Archivia da valutare</button></div>
-<p class="help">L’analisi integrata richiede l’assistente PC e un modello che supporti immagini. La schermata viene inviata soltanto quando premi Analizza e confermi. L’archiviazione senza analisi funziona anche offline. Il backup JSON include le immagini: conserva una copia completa.</p>
-<details><summary>Usare ScreenAI su Windows</summary><ol><li>Nel pacchetto è incluso il sorgente ScreenAI 1.8: compila con compila-portatile.bat.</li><li>Dal menu dell’icona scegli Cattura idea per Repo Atlas, oppure usa la normale analisi.</li><li>Nel risultato premi Esporta per Repo Atlas e salva il file .screenai.json.</li><li>Importa quel file qui e premi Archivia da valutare.</li></ol><p>L’immagine esportata è quella effettivamente inviata all’IA, con gli eventuali oscuramenti dell’anteprima.</p></details>
+<p class="help">L’analisi parte dal browser e richiede un modello che supporti immagini. La schermata viene inviata soltanto quando premi Analizza e confermi. L’archiviazione senza analisi funziona anche offline. Il backup JSON include le immagini: conserva una copia completa.</p>
+<details><summary>Usare ScreenAI su Windows</summary><ol><li>ScreenAI è un programma separato per Windows (non è più in questo pacchetto): usa la tua versione aggiornata.</li><li>Dal menu dell’icona scegli Cattura idea per Repo Atlas, oppure usa la normale analisi.</li><li>Nel risultato premi Esporta per Repo Atlas e salva il file .screenai.json.</li><li>Importa quel file qui e premi Archivia da valutare.</li></ol><p>L’immagine esportata è quella effettivamente inviata all’IA, con gli eventuali oscuramenti dell’anteprima.</p></details>
 </dialog>
 <dialog id="editor"><form id="editForm"><div class="dialog-head"><h2 id="editTitle">Archivia idea o progetto</h2><button type="button" data-close>Chiudi</button></div><p id="editorFeedback" class="feedback" role="alert"></p><input id="editId" type="hidden">
 <p class="help">Scrivi un titolo oppure aggiungi una foto e salva. Potrai completare la scheda più tardi.</p>
@@ -72,23 +164,23 @@
 <label>Tag<input id="repoTags" placeholder="Es. offline, mappe, BLE"></label><label>Note personali<textarea id="repoNotes"></textarea></label><label>Valutazione<select id="repoRating"><option value="">Non valutato</option><option value="1">★</option><option value="2">★★</option><option value="3">★★★</option><option value="4">★★★★</option><option value="5">★★★★★</option></select></label><label>Data da rivedere<input id="repoReview" type="date"></label><label>Risultato delle prove<textarea id="repoTest"></textarea></label></details><button class="primary" type="submit" id="saveEntryBtn">Salva nell’archivio</button></form></dialog><datalist id="categories"><option>IA</option><option>API e dati</option><option>GPX e trekking</option><option>Zepp OS</option><option>Mappe</option><option>Personale</option></datalist>
 <dialog id="settings"><div class="dialog-head"><h2>Impostazioni e collegamenti</h2><button data-close>Chiudi</button></div>
 <p id="settingsFeedback" class="feedback" role="status" aria-live="polite"></p>
-<h3>Stato configurazione salvata</h3><p id="configStatus" class="help" style="white-space:pre-wrap"></p><button id="checkConfigBtn">Verifica campi salvati</button>
-<p class="help">IA e controllo ZIP richiedono AVVIA_WINDOWS.bat sul PC (Python 3.10+). Su GitHub Pages queste due funzioni richiedono l’assistente locale; catalogo, GitHub e backup Google restano disponibili con i rispettivi requisiti.</p>
+<h3>Stato configurazione salvata</h3><p id="configStatus" class="help" style="white-space:pre-wrap"></p>
 <h3>Aspetto e account</h3><label>Modalità colore<select id="themeMode"><option value="system">Segui il dispositivo</option><option value="dark">Scura</option><option value="light">Chiara</option></select></label><label>Il mio account GitHub<input id="githubOwner" placeholder="baudinolorenzo73"></label><p class="help">I miei progetti contiene soltanto i repository archiviati il cui proprietario coincide con questo account. Usa Importa miei repository pubblici nella raccolta per aggiungerli senza sostituire le tue note.</p><h3>Intelligenza artificiale</h3>
 <label>Provider IA<select id="provider"><option value="ollama">Ollama locale</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI API</option></select></label>
-<button id="verifyAiBtn">Verifica chiave IA / Ollama</button><label>Modello<input id="model" placeholder="Nome esatto del modello disponibile"></label>
+<label>Modello<input id="model" placeholder="Nome esatto del modello disponibile"></label>
 <label>Chiave API IA (solo sessione)<input type="password" id="apiKey" autocomplete="off"></label>
-<p class="help">Ollama non richiede una chiave. Groq, OpenRouter e OpenAI richiedono la chiave del rispettivo account. Dopo la chiusura o il ricaricamento della pagina devi reinserirla. Salvare la configurazione non verifica automaticamente chiave o modello.</p>
+<button id="verifyAiBtn">Verifica chiave IA / Ollama</button>
+<p class="help">L’analisi parte direttamente dal browser. Ollama non richiede una chiave, ma va avviato con OLLAMA_ORIGINS impostato all’indirizzo di questa app, altrimenti il browser blocca la richiesta. Groq, OpenRouter e OpenAI richiedono la chiave del tuo account: dopo la chiusura della pagina va reinserita. Salvare la configurazione non verifica chiave o modello.</p>
 <div class="actions"><a class="btn" href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">Chiavi Groq ↗</a><a class="btn" href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">Chiavi OpenRouter ↗</a><a class="btn" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Chiavi OpenAI ↗</a></div>
 <h3>GitHub</h3><label>Token facoltativo (solo sessione)<input type="password" id="githubKey" autocomplete="off"></label><p class="help">I repository pubblici funzionano anche senza token, con limiti di richieste inferiori.</p>
-<button id="verifyGithubBtn">Verifica token GitHub</button><h3>Google Drive e Sheets</h3>
+<button id="verifyGithubBtn">Verifica token GitHub</button><h3>Google Drive</h3>
 <label>Client ID OAuth Google (applicazione web)<input id="googleClient" placeholder="…apps.googleusercontent.com"></label>
 <p class="help"><b>Il Client ID identifica l’app; il token autorizza temporaneamente il tuo account.</b> Non serve inserire un token a mano: salva il Client ID, poi premi Collega Google. Il token ottenuto resta soltanto in memoria e può scadere.</p>
-<details><summary>Come configurare Google, passo per passo</summary><ol><li>Apri il tuo progetto in Google Cloud e abilita Google Drive API. Per esportare fogli abilita anche Google Sheets API.</li><li>Configura la schermata di consenso e gli eventuali utenti di test.</li><li>Crea un Client ID OAuth di tipo applicazione web.</li><li>Tra le origini JavaScript autorizzate inserisci esattamente questa origine, senza il percorso del repository: <b id="googleOrigin"></b></li><li>Copia il Client ID qui sopra e premi Salva configurazione. Non usare un client secret.</li><li>Riapri Impostazioni, premi Collega Google e completa il consenso. Poi esegui il backup dalla sezione Backup ed esportazioni.</li></ol><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Apri Google Cloud ↗</a><p>I permessi Drive e Sheets sono distinti: esportare in Sheets può richiedere un ulteriore consenso.</p></details>
+<details><summary>Come configurare Google, passo per passo</summary><ol><li>Apri il tuo progetto in Google Cloud e abilita Google Drive API.</li><li>Configura la schermata di consenso e gli eventuali utenti di test.</li><li>Crea un Client ID OAuth di tipo applicazione web.</li><li>Tra le origini JavaScript autorizzate inserisci esattamente questa origine, senza il percorso del repository: <b id="googleOrigin"></b></li><li>Copia il Client ID qui sopra e premi Salva configurazione. Non usare un client secret.</li><li>Riapri Impostazioni, premi Collega Google e completa il consenso. Poi 💾 Salva scrive anche la copia su Drive.</li></ol><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Apri Google Cloud ↗</a></details>
 <div class="actions"><button id="saveSettings" class="primary">Salva configurazione</button><button id="authorizeGoogleBtn">Collega Google</button><button id="verifyGoogleBtn">Verifica accesso Google</button><button id="forgetKeys">Dimentica chiavi e accesso</button></div>
 <details><summary>Guida agli errori e alle soluzioni</summary><p>Il codice identifica il tipo di problema. Le indicazioni distinguono le cause accertate dalle possibilità da controllare.</p><div id="errorGuide"></div></details>
-<div class="actions"><button id="settingsLogBtn">Esporta log diagnostico</button></div><p class="muted">I log non includono chiavi, token o contenuti delle schede. Il registro ha un limite di 300 eventi nel browser; cancellare i dati del sito cancella anche questo registro.</p>
+<p class="muted">Il registro diagnostico si esporta da Impostazioni e backup → Assistenza. Non include chiavi, token o contenuti delle schede.</p>
 </dialog>
-<dialog id="exitDialog"><div class="dialog-head"><h2>Salva ed esci</h2><button data-close>Chiudi</button></div><p>Salva il file completo prima di chiudere. Il backup Drive è facoltativo. Il backup comprende l’intero archivio, README, analisi, note e configurazione non segreta.</p><label><input id="exitRequireDrive" type="checkbox"> Richiedi anche una copia Drive prima di concludere</label><p id="exitStatus" class="help"></p><p id="exitMessage" role="status"></p><div class="actions"><button id="exitFileBtn" class="primary">1. Salva file completo</button><button id="exitDriveBtn">2. Salva su Drive</button><button id="finishExitBtn">Concludi sessione</button></div><p class="muted">Se manca la rete o Google rifiuta l’accesso, il file locale resta disponibile e il backup Drive rimane indicato come da fare.</p></dialog><dialog id="confirmDownload"><h2>Verifica il download</h2><p>Il browser ha ricevuto il file Repo_Atlas_catalogo.json. Controlla che sia effettivamente presente nella cartella Download prima di confermare.</p><button id="confirmedDownloadBtn" class="primary">Ho verificato il file scaricato</button><button data-close>Non ancora</button></dialog><input type="file" id="importFile" accept="application/json,.json" hidden><section id="printArea" class="print-only"></section><script src="./errors.js"></script><script src="./model.js"></script><script src="./diagnostics.js"></script><script src="./browser-draft.js"></script><script src="./captures.js"></script><script src="./discovery.js"></script><script src="./app.js"></script><script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+<dialog id="confirmDownload"><h2>Verifica il download</h2><p>Il browser ha ricevuto il file Repo_Atlas_catalogo.json. Controlla che sia effettivamente presente nella cartella Download prima di confermare.</p><button id="confirmedDownloadBtn" class="primary">Ho verificato il file scaricato</button><button data-close>Non ancora</button></dialog><input type="file" id="importFile" accept="application/json,.json" hidden><section id="printArea" class="print-only"></section><script src="./errors.js"></script><script src="./model.js"></script><script src="./diagnostics.js"></script><script src="./browser-draft.js"></script><script src="./captures.js"></script><script src="./discovery.js"></script><script src="./ia.js"></script><script src="./app.js"></script><script src="./api-catalogo.js"></script><script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
 </body></html>
 

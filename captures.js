@@ -56,7 +56,7 @@ async function analyzeCaptureDraft(){
   if(!captureDraft)throw new AtlasError('CAPTURE_MISSING');checkAiConfig();
   if(!confirm('Inviare questa immagine al provider IA configurato? Verifica prima che non contenga informazioni che non vuoi condividere.'))return;
   $('captureFeedback').textContent='Analisi della schermata in corso…';
-  const result=await local('capture/analyze',{provider:prefs.provider||'ollama',model:prefs.model,apiKey:session.apiKey,imageDataUrl:captureDraft.capture.imageDataUrl});
+  const result=await ia('capture/analyze',{provider:prefs.provider||'ollama',model:prefs.model,apiKey:session.apiKey,imageDataUrl:captureDraft.capture.imageDataUrl});
   if(typeof result.analysis!=='string')throw new AtlasError('RESPONSE_INVALID');
   captureDraft={...captureDraft,capture:normalizeCapture({...captureDraft.capture,originalAnalysis:result.analysis,prompt:result.prompt||CAPTURE_PROMPT,provider:prefs.provider||'ollama',model:prefs.model}),analysis:result.analysis};
   $('captureAnalysis').value=result.analysis;$('captureFeedback').textContent='Analisi pronta. Premi Archivia da valutare per conservarla con l’immagine.';

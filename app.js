@@ -1,7 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id), DB='repo-atlas.db.v1', PREF='repo-atlas.settings.v1';
-let repos=[], chosen=new Set(), current=null, editing=null, localToken='', prefs={}, googleToken='', busy=false, storageOK=true;
-let generation=0, fileGeneration=-1, driveGeneration=-1, catalogRevision='', localLoaded=false;
+let repos=[], chosen=new Set(), current=null, editing=null, prefs={}, googleToken='', busy=false, storageOK=true;
+let generation=0, fileGeneration=-1, driveGeneration=-1;
 let fileHandle=null, fileQueue=Promise.resolve(), fileError='', lastFile='', formDirty=false, importMode='merge';
 let editorDraft=null;
 let editorPhotos=[];
@@ -11,7 +11,7 @@ const session={apiKey:'',githubKey:''};
 let googleAuth={token:'',expiresAt:0,scopes:[]};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityRank={Alta:0,Media:1,Bassa:2};
-function message(s){$('message').textContent=s;$('message').dataset.kind='info';$('message').setAttribute('role','status');$('errorActions').hidden=true;if($('exitDialog')?.open)$('exitMessage').textContent=s}
+function message(s){$('message').textContent=s;$('message').dataset.kind='info';$('message').setAttribute('role','status');$('errorActions').hidden=true}
 function showError(error,operation='app'){
   const e=errorInfo(error),code=e.code||'UNKNOWN',entry=ERROR_HELP[code]||ERROR_HELP.UNKNOWN;
   message(e.message);$('message').dataset.kind='error';$('message').setAttribute('role','alert');
@@ -41,15 +41,15 @@ function normalize(r){
   return out;
 }
 function snapshot(){return {schemaVersion:4,seedVersion:seedVersionApplied,exportedAt:new Date().toISOString(),repositories:repos.map(normalize),settings:{provider:prefs.provider||'ollama',model:prefs.model||'',googleClient:prefs.googleClient||'',githubOwner:githubOwner(),theme:prefs.theme||'system'}}}
-function storageStatus(){const driveRequired=$('exitRequireDrive').checked;const text=`File: ${fileGeneration===generation?'salvato'+(lastFile?' ('+lastFile+')':''):'modifiche da salvare'} · Drive: ${driveGeneration===generation?'copia confermata':'backup da fare'} · Browser: ${storageOK?'copia di emergenza disponibile':'copia di emergenza non confermata'}${fileError?' · ERRORE: '+fileError:''}`;$('saveStatus').textContent=text;$('exitStatus').textContent=text;$('finishExitBtn').disabled=formDirty||fileGeneration!==generation||(driveRequired&&driveGeneration!==generation)}
+function storageStatus(){const text=`File: ${fileGeneration===generation?'salvato'+(lastFile?' ('+lastFile+')':''):'modifiche da salvare'}${prefs.googleClient?' · Drive: '+(driveGeneration===generation?'copia confermata':'backup da fare'):''} · Browser: ${storageOK?'copia di emergenza disponibile':'copia di emergenza non confermata'}${fileError?' · ERRORE: '+fileError:''}`;$('saveStatus').textContent=text;$('connection').textContent=fileGeneration===generation?'● Salvato su file':'○ Da salvare su file';$('connection').dataset.saved=String(fileGeneration===generation)}
 function emergencyDraft(){
   const data=snapshot();let smallSaved=false;
   try{const text=JSON.stringify(data);if(text.length<2*1024*1024){localStorage.setItem(DB,text);smallSaved=true}localStorage.setItem(PREF,JSON.stringify(data.settings))}catch{}
   storageOK=smallSaved;
   queueLargeDraft(data).then(saved=>{if(saved)storageOK=true;else if(!smallSaved)recordDiagnostic('BROWSER_STORAGE',{operation:'emergency_save'});storageStatus()}).catch(()=>{if(!smallSaved){storageOK=false;recordDiagnostic('BROWSER_STORAGE',{operation:'emergency_save'});storageStatus()}});
 }
-function queueFile(){const data=snapshot(),version=generation;fileQueue=fileQueue.then(async()=>{if(!localLoaded)throw Error('Archivio locale non caricato: salvataggio bloccato per evitare sovrascritture.');const result=await local('catalog/save',{catalog:data,expectedRevision:catalogRevision});catalogRevision=result.revision;fileGeneration=version;lastFile=result.path;fileError='';storageStatus()}).catch(e=>{fileError=errorInfo(e).message;showError(e,'catalog/save');storageStatus()});return fileQueue}
-function save(){generation++;emergencyDraft();if(localToken&&localLoaded)queueFile();render();storageStatus()}
+
+function save(){generation++;emergencyDraft();render();storageStatus()}
 function validateSnapshot(data){if(!data||typeof data!=='object')throw new AtlasError('ARCHIVE_INVALID');if(data.schemaVersion!==undefined&&![1,2,3,4].includes(data.schemaVersion))throw new AtlasError('ARCHIVE_VERSION');const list=Array.isArray(data)?data:data.repositories;if(!Array.isArray(list))throw new AtlasError('ARCHIVE_INVALID');if(list.length>5000)throw new AtlasError('ARCHIVE_TOO_LARGE');const valid=list.map(normalize);if(new Set(valid.map(recordKey)).size!==valid.length)throw new AtlasError('ARCHIVE_DUPLICATE');return valid}
 function convertIdeas(list){if(list.length>5000)throw new AtlasError('ARCHIVE_TOO_LARGE');return list.map(x=>{if(!x||typeof x!=='object')throw new AtlasError('ARCHIVE_INVALID');let url=String(x.link||'').trim();if(url&&!/^https?:\/\//i.test(url))url='https://'+url;url=webUrl(url,true);const statuses={'Da valutare':'Da controllare','Da testare':'Da provare','In test':'In test','Approvato':'Approvato','Scartato':'Scartato','Archiviato':'Archiviato'};const photos=Array.isArray(x.images)?x.images.map(i=>imageDataUrl(i.f)):[];if(photos.length>8)throw new AtlasError('CAPTURE_INVALID');return normalize({id:'idea:'+crypto.randomUUID(),kind:'idea',url,title:String(x.title||'Idea senza titolo'),description:String(x.explanation||''),notes:[x.notes||'',x.screenshot?'Link immagine originale: '+x.screenshot:''].filter(Boolean).join('\n'),category:String(x.category||'Altro'),status:statuses[x.status]||'Da controllare',priority:x.priority,tags:Array.isArray(x.tags)?x.tags.join(', '):String(x.tags||''),rating:String(x.rating||''),reviewDate:String(x.reviewDate||''),testResult:String(x.testResult||''),createdAt:String(x.createdAt||''),photos})})}
 function applySettings(data){if(data.settings&&typeof data.settings==='object')for(const key of ['provider','model','googleClient','githubOwner','theme'])if(typeof data.settings[key]==='string')prefs[key]=data.settings[key].slice(0,300)}
@@ -57,8 +57,12 @@ function catalogSeedVersion(data){const n=Number(!Array.isArray(data)&&data?.see
 function loadCatalog(data){repos=validateSnapshot(data);seedVersionApplied=catalogSeedVersion(data);applySettings(data)}
 function mergeBundledSeed(){if(seedVersionApplied>=bundledSeedVersion)return {changed:false,added:0};const ids=new Set(repos.map(r=>r.id.toLowerCase()));const missing=bundledSeed.filter(r=>!ids.has(r.id.toLowerCase()));repos.push(...missing.map(normalize));seedVersionApplied=bundledSeedVersion;return {changed:true,added:missing.length}}
 async function openArchive(){importMode='open';$('importFile').click()}
-async function saveFile(){if(formDirty||captureDraft)throw new AtlasError('DRAFT_UNSAVED');if(localToken){await fileQueue;if(fileGeneration!==generation)await queueFile();if(fileGeneration!==generation)throw Error('Salvataggio locale non riuscito: '+fileError);message('Archivio completo salvato in '+lastFile+'.');return true}if(fileGeneration===generation)return true;if(window.showSaveFilePicker){if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'Repo_Atlas_catalogo.json',types:[{description:'Archivio Repo Atlas',accept:{'application/json':['.json']}}]});const version=generation,data=JSON.stringify(snapshot(),null,2),stream=await fileHandle.createWritable();await stream.write(data);await stream.close();fileGeneration=version;lastFile=fileHandle.name;fileError='';storageStatus();message('Archivio completo scritto su file: '+lastFile);return true}$('confirmDownload').dataset.version=String(generation);downloadBlob(JSON.stringify(snapshot(),null,2),'application/json','Repo_Atlas_catalogo.json');$('confirmDownload').showModal();message('Download JSON richiesto. Verifica il file nei Download: il browser non permette di confermare automaticamente la scrittura.');return false}
-function saveAndExit(){if(formDirty)throw new AtlasError('DRAFT_UNSAVED');storageStatus();$('exitDialog').showModal()}
+async function saveFile(){if(formDirty||captureDraft)throw new AtlasError('DRAFT_UNSAVED');if(fileGeneration===generation)return true;if(window.showSaveFilePicker){if(!fileHandle)fileHandle=await window.showSaveFilePicker({suggestedName:'Repo_Atlas_catalogo.json',types:[{description:'Archivio Repo Atlas',accept:{'application/json':['.json']}}]});const version=generation,data=JSON.stringify(snapshot(),null,2),stream=await fileHandle.createWritable();await stream.write(data);await stream.close();fileGeneration=version;lastFile=fileHandle.name;fileError='';storageStatus();message('Archivio completo scritto su file: '+lastFile);return true}$('confirmDownload').dataset.version=String(generation);downloadBlob(JSON.stringify(snapshot(),null,2),'application/json','Repo_Atlas_catalogo.json');$('confirmDownload').showModal();message('Download JSON richiesto. Verifica il file nei Download: il browser non permette di confermare automaticamente la scrittura.');return false}
+async function saveAll(){
+  const fileOk=await saveFile();
+  if(fileOk===false||!prefs.googleClient||driveGeneration===generation)return;
+  await saveDrive();
+}
 function filtered(){
   const q=$('search').value.toLowerCase();
   return repos.filter(r=>matchesCollection(r)&&(!$('category').value||r.category===$('category').value)&&(!$('priority').value||r.priority===$('priority').value)&&(!$('statusFilter').value||r.status===$('statusFilter').value)&&(!q||[r.id,r.title,r.url,r.description,r.notes,r.project,r.reuse,r.tags,r.analysis].join(' ').toLowerCase().includes(q)))
@@ -91,7 +95,7 @@ function renderDetail(){
     (g?'<p><span class="badge">★ '+g.stars+'</span> '+escapeHTML(g.language)+' · Licenza: '+escapeHTML(g.license||'non dichiarata')+'</p><p class="muted">Ultimo push: '+escapeHTML(g.pushed||'n/d')+'<br>Controllo: '+escapeHTML(r.checkedAt||'non effettuato')+'</p>':'')+
     (r.updateState==='changed'?'<p class="update-badge">Il repository è cambiato dall’ultimo controllo.</p>':'')+
     '<div class="actions">'+(r.url?'<a class="btn" target="_blank" rel="noopener noreferrer" href="'+escapeHTML(r.url)+'">'+(githubOnly?'GitHub':'Apri fonte')+' ↗</a>':'')+
-    (githubOnly?'<button data-action="refresh">Controlla aggiornamenti GitHub</button><button data-action="download">Scarica e controlla</button>':'')+
+    (githubOnly?'<button data-action="refresh">Controlla aggiornamenti GitHub</button>':'')+
     '<button data-action="analyze" class="primary">Spiegami con IA</button><button data-action="edit">Modifica</button><button data-action="duplicate">Duplica</button><button data-action="delete" class="danger">Rimuovi</button>'+
     (githubOnly&&g?.sha&&g?.previousSha&&g.sha!==g.previousSha?'<a class="btn" target="_blank" rel="noopener noreferrer" href="'+escapeHTML(r.url+'/compare/'+g.previousSha+'...'+g.sha)+'">Vedi modifiche ↗</a>':'')+'</div>'+
     (r.inspectionReport?'<details><summary>Ultimo rapporto di controllo</summary><pre>'+escapeHTML(r.inspectionReport)+'</pre></details>':'')+
@@ -120,8 +124,8 @@ function updateEditorKind(){
   $('entryHint').textContent=kind==='idea'?'Puoi salvare anche un’idea senza link. Descrivi cosa vorresti realizzare.':kind==='web'?'Incolla il link di un articolo, uno strumento o un progetto trovato sul web.':'Salva un repository trovato; se appartiene al tuo account apparirà in I miei progetti.';
 }
 async function jsonFetch(url,options={}){
-  const service=String(url).startsWith('https://api.github.com/')?'github':String(url).includes('googleapis.com/')?'google':String(url).startsWith('./api/')?'local':'app';
-  const controller=new AbortController(),limit=String(url).includes('/analyze')?260000:String(url).includes('/inspect')?115000:45000;
+  const service=String(url).startsWith('https://api.github.com/')?'github':String(url).includes('googleapis.com/')?'google':String(url).startsWith('./api/')?'local':/^https:\/\/(api\.groq\.com|openrouter\.ai|api\.openai\.com)\/|^http:\/\/(127\.0\.0\.1|localhost):11434\//.test(String(url))?'ai':'app';
+  const controller=new AbortController(),limit=service==='ai'&&String(url).includes('/chat/completions')?240000:45000;
   let timedOut=false;const timer=setTimeout(()=>{timedOut=true;controller.abort()},limit);
   try{
     const res=await fetch(url,{...options,signal:controller.signal});let body;
@@ -134,7 +138,7 @@ async function jsonFetch(url,options={}){
     }
     return body;
   }catch(e){
-    const failure=e instanceof AtlasError?e:new AtlasError(timedOut?'TIMEOUT':service==='local'?'LOCAL_OFFLINE':'NETWORK',{service});
+    const failure=e instanceof AtlasError?e:new AtlasError(timedOut?'TIMEOUT':service==='ai'&&String(url).includes(':11434')?'OLLAMA_OFFLINE':'NETWORK',{service});
     recordDiagnostic(failure.code,{...failure.meta,operation:'request'});throw failure;
   }finally{clearTimeout(timer)}
 }
@@ -150,13 +154,11 @@ async function github(r){
   r.github={stars:meta.stargazers_count||0,language:meta.language||'',license:meta.license?.spdx_id||'',pushed:meta.pushed_at||'',archived:!!meta.archived,sha:sha||old.sha||'',previousSha:changed?old.sha||'':old.previousSha||'',description:meta.description||''};
   r.readme=readme;if(!r.description&&meta.description)r.description=meta.description;r.checkedAt=new Date().toISOString();save();return r;
 }
-async function local(path,data){if(!localToken)throw new AtlasError('LOCAL_REQUIRED');return jsonFetch('./api/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Repo-Token':localToken},body:JSON.stringify(data)})}
-async function analyze(r){checkAiConfig();if(r.capture){const result=await local('capture/analyze',{provider:prefs.provider||'ollama',model:prefs.model,apiKey:session.apiKey,imageDataUrl:r.capture.imageDataUrl});r.analysis=result.analysis;r.aiAt=new Date().toISOString();save();return;}if(r.kind==='github'&&!r.readme)await github(r);if(r.kind!=='github'&&![r.description,r.notes,r.reuse].some(t=>t?.trim()))throw new AtlasError('IDEA_TEXT_REQUIRED');message('Analisi IA: '+r.id+'…');const data=await local('analyze',{provider:prefs.provider,model:prefs.model,apiKey:session.apiKey,repository:{id:r.id,kind:r.kind,title:r.title,url:r.url,description:r.description,reuse:r.reuse,notes:r.notes,github:r.github,readme:r.readme,project:r.project}});r.analysis=data.analysis;r.aiAt=new Date().toISOString();save()}
+async function analyze(r){checkAiConfig();if(r.capture){const result=await ia('capture/analyze',{provider:prefs.provider||'ollama',model:prefs.model,apiKey:session.apiKey,imageDataUrl:r.capture.imageDataUrl});r.analysis=result.analysis;r.aiAt=new Date().toISOString();save();return;}if(r.kind==='github'&&!r.readme)await github(r);if(r.kind!=='github'&&![r.description,r.notes,r.reuse].some(t=>t?.trim()))throw new AtlasError('IDEA_TEXT_REQUIRED');message('Analisi IA: '+r.id+'…');const data=await ia('analyze',{provider:prefs.provider,model:prefs.model,apiKey:session.apiKey,repository:{id:r.id,kind:r.kind,title:r.title,url:r.url,description:r.description,reuse:r.reuse,notes:r.notes,github:r.github,readme:r.readme,project:r.project}});r.analysis=data.analysis;r.aiAt=new Date().toISOString();save()}
 async function batch(fn){if(busy)return;busy=true;updateCapabilities();try{let list=batchTargets();if(!list.length)throw new AtlasError('SELECTION_MISSING');if(fn===github){list=list.filter(r=>r.kind==='github');if(!list.length)throw new AtlasError('GITHUB_ONLY');}if(fn===analyze)checkAiConfig();if(fn===analyze&&!confirm(`Analizzare ${list.length} repository? Il provider IA configurato riceverà README e metadati. Le API possono avere costi.`))return;const errors=[];for(let i=0;i<list.length;i++){message(`${i+1}/${list.length} · ${list[i].id}`);try{await fn(list[i])}catch(e){errors.push(list[i].id+': '+showError(e,fn===analyze?'analyze':'github').message)}}message(`Completati ${list.length-errors.length}/${list.length}. ${fn===github?'Aggiornati dall’ultimo controllo: '+list.filter(r=>r.updateState==='changed').length+'.':''}`+(errors.length?'\n'+errors.join('\n'):''))}catch(e){showError(e,fn===analyze?'analyze':'github')}finally{busy=false;updateCapabilities()}}
 function downloadBlob(data,type,name){const url=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function exportRows(){return [['Titolo','Tipo','ID','URL','Categoria','Priorità','Stato','Descrizione','Da riutilizzare','Progetto collegato','Tag','Note','Stelle','Linguaggio','Licenza','Archiviato','Ultimo push','Controllato','Analisi IA','Data analisi','Aggiornamenti'],...targets().map(r=>[labelFor(r),kindLabel(r.kind),r.id,r.url,r.category,r.priority,r.status,r.description,r.reuse,r.project,r.tags,r.notes,r.github?.stars??'',r.github?.language||'',r.github?.license||'',r.github?.archived?'Sì':'No',r.github?.pushed||'',r.checkedAt,r.analysis,r.aiAt,r.updateState])]}
 
-function csvCell(v){v=String(v??'');if(/^[\s]*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}
 function xml(s){return String(s??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]))}
 function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}
 function zipStore(files){const enc=new TextEncoder(),chunks=[],central=[];let offset=0;function head(n){const b=new Uint8Array(n);return [b,new DataView(b.buffer)]}for(const [name,text] of Object.entries(files)){const path=enc.encode(name),body=enc.encode(text),crc=crc32(body);let [h,v]=head(30);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint32(14,crc,true);v.setUint32(18,body.length,true);v.setUint32(22,body.length,true);v.setUint16(26,path.length,true);chunks.push(h,path,body);let [c,w]=head(46);w.setUint32(0,0x02014b50,true);w.setUint16(4,20,true);w.setUint16(6,20,true);w.setUint32(16,crc,true);w.setUint32(20,body.length,true);w.setUint32(24,body.length,true);w.setUint16(28,path.length,true);w.setUint32(42,offset,true);central.push(c,path);offset+=30+path.length+body.length}const len=central.reduce((s,b)=>s+b.length,0);let [e,v]=head(22);v.setUint32(0,0x06054b50,true);v.setUint16(8,Object.keys(files).length,true);v.setUint16(10,Object.keys(files).length,true);v.setUint32(12,len,true);v.setUint32(16,offset,true);return new Blob([...chunks,...central,e])}
@@ -166,7 +168,6 @@ function checkAiConfig(){
   const provider=prefs.provider||'ollama';
   if(provider!=='ollama'&&!session.apiKey)throw new AtlasError('AI_KEY_MISSING');
   if(!prefs.model)throw new AtlasError('AI_MODEL_MISSING');
-  if(!localToken)throw new AtlasError('LOCAL_REQUIRED');
 }
 function checkGoogleConfig(){
   if(!prefs.googleClient)throw new AtlasError('GOOGLE_CLIENT_MISSING');
@@ -206,17 +207,18 @@ function loadGoogle(){
   return googleLibrary;
 }
 async function saveDrive(){if(formDirty)throw new AtlasError('DRAFT_UNSAVED');const version=generation,data=JSON.stringify(snapshot(),null,2),token=await googleAccess('https://www.googleapis.com/auth/drive.file');const boundary='repo_atlas_'+crypto.randomUUID().replaceAll('-',''),name='Repo_Atlas_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';const metadata={name,mimeType:'application/json',appProperties:{application:'repo-atlas',schema:'3'}};const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+data+'\r\n--'+boundary+'--';message('Salvataggio completo su Drive…');const saved=await jsonFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});if(!saved.id)throw new AtlasError('GOOGLE_VERIFY');const check=await jsonFetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(saved.id)+'?fields=id,name,size,md5Checksum,webViewLink',{headers:{Authorization:'Bearer '+token}});if(Number(check.size)!==new TextEncoder().encode(data).length)throw new AtlasError('GOOGLE_VERIFY');driveGeneration=version;storageStatus();message('Backup completo confermato su Drive: '+check.name);if(check.webViewLink){const a=document.createElement('a');a.href=check.webViewLink;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' Apri backup su Drive ↗';$('message').append(a)}}
-async function sheets(){const token=await googleAccess('https://www.googleapis.com/auth/spreadsheets');const headers={Authorization:'Bearer '+token,'Content-Type':'application/json'},values=exportRows();const data=await jsonFetch('https://sheets.googleapis.com/v4/spreadsheets',{method:'POST',headers,body:JSON.stringify({properties:{title:'Repo Atlas — '+new Date().toLocaleString('it-IT')},sheets:[{properties:{title:'Repository',gridProperties:{rowCount:Math.max(1000,values.length),columnCount:21}}}]})});message('Foglio creato: '+data.spreadsheetUrl+' · Caricamento dati…');try{await jsonFetch('https://sheets.googleapis.com/v4/spreadsheets/'+data.spreadsheetId+'/values/Repository!A1?valueInputOption=RAW',{method:'PUT',headers,body:JSON.stringify({values})});message('Esportazione completata: '+data.spreadsheetUrl)}catch(e){showError(new AtlasError('SHEETS_PARTIAL',{service:'google'}),'sheets_write')}}
 async function run(fn){if(busy)return;busy=true;updateCapabilities();const operation=fn.name?fn.name.toLowerCase():'app';try{await fn()}catch(e){showError(e,operation)}finally{busy=false;updateCapabilities()}}
 $('list').addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(b){current=b.dataset.open;document.body.classList.add('detail-open');render();if(matchMedia('(max-width:850px)').matches)$('detail').scrollIntoView({block:'start'})}});
 $('list').addEventListener('change',e=>{const id=e.target.dataset.check;if(id){e.target.checked?chosen.add(id):chosen.delete(id);render()}});
 $('detail').addEventListener('click',e=>{if(e.target.dataset.action!=='duplicate')return;const r=repos.find(x=>x.id===current);if(!r)return;const copy={...r,id:'idea:'+crypto.randomUUID(),kind:'idea',title:labelFor(r)+' (copia)',url:r.url||'',github:undefined,updateState:'unchecked'};newEntry('idea',copy);message('Modifica la copia e salvala come nuova idea.')});
-$('detail').addEventListener('click',e=>{const a=e.target.dataset.action,r=repos.find(x=>x.id===current);if(a==='back'){document.body.classList.remove('detail-open');return}if(!a||!r||a==='duplicate')return;if(busy){message('Attendi il completamento dell’operazione in corso.');return}if(a==='edit')edit(r);else if(a==='delete'){if(confirm('Rimuovere '+r.id+' dal catalogo?')){repos=repos.filter(x=>x!==r);chosen.delete(r.id);current=null;document.body.classList.remove('detail-open');save()}}else run(async()=>{if(a==='refresh')await github(r);if(a==='analyze'){if(!confirm('Inviare al provider IA il contenuto della scheda e l’immagine, se presente? Verifica prima ciò che desideri condividere.'))return;await analyze(r)}if(a==='download'){if(!confirm('Scaricare lo ZIP pubblico e controllarne i file? Nessun comando del repository viene eseguito.'))return;message('Download e controllo: '+r.id);const result=await local('inspect',{id:r.id,githubKey:session.githubKey});r.inspectionReport=result.report;save();message(result.report);if(result.preview){const b=document.createElement('a');b.className='btn';b.textContent='Apri anteprima isolata ↗';b.href=result.preview;b.target='_blank';b.rel='noopener noreferrer';$('message').append(document.createElement('br'),b)}}else message(a==='refresh'?(r.updateState==='changed'?'Aggiornamenti trovati: ':r.updateState==='new'?'Primo controllo registrato: ':'Nessun nuovo aggiornamento: ')+r.id:'Operazione completata: '+r.id)})});
+$('detail').addEventListener('click',e=>{const a=e.target.dataset.action,r=repos.find(x=>x.id===current);if(a==='back'){document.body.classList.remove('detail-open');return}if(!a||!r||a==='duplicate')return;if(busy){message('Attendi il completamento dell’operazione in corso.');return}if(a==='edit')edit(r);else if(a==='delete'){if(confirm('Rimuovere '+r.id+' dal catalogo?')){repos=repos.filter(x=>x!==r);chosen.delete(r.id);current=null;document.body.classList.remove('detail-open');save()}}else run(async()=>{if(a==='refresh')await github(r);if(a==='analyze'){if(!confirm('Inviare al provider IA il contenuto della scheda e l’immagine, se presente? Verifica prima ciò che desideri condividere.'))return;await analyze(r)}message(a==='refresh'?(r.updateState==='changed'?'Aggiornamenti trovati: ':r.updateState==='new'?'Primo controllo registrato: ':'Nessun nuovo aggiornamento: ')+r.id:'Operazione completata: '+r.id)})});
 for(const id of ['search','category','priority','statusFilter','sort','collection'])$(id).addEventListener(id==='search'?'input':'change',()=>{chosen.clear();render()});
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>requestClose(b.closest('dialog')));
-$('addBtn').onclick=()=>newEntry('idea');
-$('quickCameraBtn').onclick=()=>{newEntry('idea');$('repoCamera').click()};
-$('quickGalleryBtn').onclick=()=>{newEntry('idea');$('repoPhotos').click()};
+$('addIdeaBtn').onclick=()=>{$('addDialog').close();newEntry('idea')};
+$('addWebBtn').onclick=()=>{$('addDialog').close();newEntry('web')};
+$('addPhotoBtn').onclick=()=>{$('addDialog').close();showCapture()};
+$('discoverBtn').onclick=()=>showView('discover');
+$('discoverBackBtn').onclick=()=>showView('catalog');
 $('entryKind').onchange=()=>{formDirty=true;updateEditorKind()};
 $('editForm').onsubmit=e=>{
   e.preventDefault();if(photosLoading){$('editorFeedback').textContent='Attendi il caricamento delle immagini.';return}try{
@@ -238,7 +240,7 @@ $('editForm').onsubmit=e=>{
 };
 $('clearSelection').onclick=()=>{chosen.clear();render()};
 $('selectAll').onclick=()=>{const ids=filtered().map(r=>r.id),all=ids.every(x=>chosen.has(x));ids.forEach(x=>all?chosen.delete(x):chosen.add(x));render()};$('refreshAll').onclick=()=>batch(github);$('analyzeAll').onclick=()=>batch(analyze);
-$('jsonBtn').onclick=()=>downloadBlob(JSON.stringify({schemaVersion:4,seedVersion:seedVersionApplied,exportedAt:new Date().toISOString(),repositories:targets()},null,2),'application/json','LolloLab_selezione.json');$('csvBtn').onclick=()=>downloadBlob('\ufeff'+exportRows().map(r=>r.map(csvCell).join(';')).join('\r\n'),'text/csv;charset=utf-8','Repo_Atlas.csv');$('xlsxBtn').onclick=()=>downloadBlob(makeXlsx(exportRows()),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Repo_Atlas.xlsx');$('pdfBtn').onclick=printReport;$('sheetsBtn').onclick=()=>run(sheets);
+$('jsonBtn').onclick=()=>downloadBlob(JSON.stringify({schemaVersion:4,seedVersion:seedVersionApplied,exportedAt:new Date().toISOString(),repositories:targets()},null,2),'application/json','LolloLab_selezione.json');$('xlsxBtn').onclick=()=>downloadBlob(makeXlsx(exportRows()),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Repo_Atlas.xlsx');$('pdfBtn').onclick=printReport;
 $('importBtn').onclick=()=>{importMode='merge';$('importFile').click()};
 $('importFile').onchange=()=>run(async()=>{
   const f=$('importFile').files[0];
@@ -279,32 +281,7 @@ async function init(){
     repos=bundledSeed.map(normalize);
     seedVersionApplied=bundledSeedVersion;
   }catch(e){message('Catalogo iniziale non disponibile: '+e.message+'. Puoi aprire un archivio JSON.')}
-  if(['localhost','127.0.0.1'].includes(location.hostname)){
-    try{
-      const h=await jsonFetch('./api/health');
-      if(h.app!=='repo-atlas')throw Error('Assistente locale non riconosciuto');
-      localToken=h.token;
-      const disk=await local('catalog/load',{});
-      if(disk.catalog)loadCatalog(disk.catalog);
-      else if(draft)loadCatalog(draft);
-      catalogRevision=disk.revision;
-      localLoaded=true;
-      if(disk.catalog){
-        let recoveredSeedVersion=false;
-        if(!seedVersionApplied&&draft&&catalogSeedVersion(draft)>=bundledSeedVersion&&JSON.stringify(validateSnapshot(draft))===JSON.stringify(repos)){
-          seedVersionApplied=catalogSeedVersion(draft);recoveredSeedVersion=true;
-        }
-        fileGeneration=generation;lastFile='data/catalogo.json';
-        if(draft&&catalogContent(draft)!==catalogContent(snapshot())&&confirm('La copia di emergenza del browser è diversa dal file. Recuperarla? Annulla per usare il file su disco.')){
-          loadCatalog(draft);save();
-        }
-        if(recoveredSeedVersion)save();
-      }else message('Archivio pronto. Premi Salva file completo per creare data/catalogo.json.');
-    }catch(e){
-      if(localToken){safeToDraft=false;localLoaded=false;message('Archivio locale non caricato: '+e.message+'. Salvataggio bloccato; usa Ricarica archivio locale dopo aver risolto il problema.')}
-      else if(draft){try{loadCatalog(draft)}catch{message('Copia browser non valida: apri un file JSON.')}}
-    }
-  }else if(draft){try{loadCatalog(draft)}catch{message('Copia browser non valida: apri un file JSON.')}}
+  if(draft){try{loadCatalog(draft)}catch{message('Copia browser non valida: apri un file JSON.')}}
   if(safeToDraft){
     const migrated=mergeBundledSeed();
     if(migrated.changed){save();message('Catalogo aggiornato: '+migrated.added+' nuove schede.')}
@@ -317,40 +294,20 @@ async function init(){
   const shared=new URLSearchParams(location.search);if(shared.has('title')||shared.has('text')||shared.has('link')){const title=shared.get('title')||'',body=shared.get('text')||'',link=shared.get('link')||(body.match(/https?:\/\/\S+/)||[])[0]||'';history.replaceState(null,'',location.pathname);newEntry('idea');$('entryTitle').value=title||body.slice(0,120)||'Idea condivisa';$('repoUrl').value=link;$('repoDescription').value=body;formDirty=true}
 }
 function catalogContent(data){return JSON.stringify({repositories:validateSnapshot(data),settings:data.settings||{},seedVersion:catalogSeedVersion(data)})}
-async function reloadLocal(){
-  if(!localToken)throw Error('Assistente locale non collegato.');
-  if(!confirm('Rileggere il file sul disco? Le modifiche in lavoro saranno sostituite. Prima esporta un backup se vuoi conservarle.'))return;
-  await fileQueue;
-  const disk=await local('catalog/load',{});
-  if(!disk.catalog)throw Error('Nessun archivio locale da riaprire.');
-  const valid=validateSnapshot(disk.catalog);
-  repos=valid;seedVersionApplied=catalogSeedVersion(disk.catalog);applySettings(disk.catalog);
-  catalogRevision=disk.revision;localLoaded=true;generation++;fileGeneration=generation;driveGeneration=-1;
-  fileError='';lastFile='data/catalogo.json';chosen.clear();current=repos[0]?.id;
-  const migrated=mergeBundledSeed();if(migrated.changed)save();else{emergencyDraft();render();storageStatus()}
-  message('Archivio locale ricaricato. Ora puoi salvare.');
-}
 
 $('openArchiveBtn').onclick=openArchive;
-$('saveFileBtn').onclick=()=>run(saveFile);
-$('saveDriveBtn').onclick=()=>run(saveDrive);
-$('exitBtn').onclick=()=>run(saveAndExit);
-$('exitFileBtn').onclick=()=>run(saveFile);
-$('exitDriveBtn').onclick=()=>run(saveDrive);
-$('exitRequireDrive').onchange=storageStatus;
-$('reloadLocalBtn').onclick=()=>run(reloadLocal);
-$('finishExitBtn').onclick=()=>{if(formDirty||fileGeneration!==generation||($('exitRequireDrive').checked&&driveGeneration!==generation)){message('Completa i salvataggi richiesti.');return}$('exitDialog').close();message(driveGeneration===generation?'File e Drive confermati. Puoi chiudere questa scheda.':'File confermato. Puoi chiudere questa scheda; il backup Drive resta da fare.');};
-$('confirmedDownloadBtn').onclick=()=>{fileGeneration=Number($('confirmDownload').dataset.version);lastFile='Download verificato da te';storageStatus();$('confirmDownload').close();message('Download confermato. Puoi anche creare un backup su Drive.')};
+$('saveBtn').onclick=()=>run(saveAll);
+$('confirmedDownloadBtn').onclick=()=>{fileGeneration=Number($('confirmDownload').dataset.version);lastFile='Download verificato da te';storageStatus();$('confirmDownload').close();message('Download confermato.');if(prefs.googleClient)run(saveDrive)};
 window.addEventListener('beforeunload',e=>{if(formDirty||captureDraft||busy||fileGeneration!==generation){e.preventDefault();e.returnValue=''}});
 for(const id of ['editor','settings'])$(id).addEventListener('input',()=>{formDirty=true});
 $('editor').addEventListener('close',()=>{editorSession++;photosLoading=false;formDirty=false});
 $('settings').addEventListener('close',()=>{formDirty=false});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&(!localToken||localLoaded))emergencyDraft()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){emergencyDraft()}});
 function showView(view){
   $('exportScope').textContent=`Esporterai ${targets().length} schede: ${chosen.size?'selezione attiva':'risultati filtrati'}. Torna al Catalogo per cambiare la selezione.`;
-  $('catalogView').hidden=view!=='catalog';$('backupView').hidden=view!=='backup';$('discoverView').hidden=view!=='discover';
+  $('catalogView').hidden=view!=='catalog';$('backupView').hidden=view!=='backup';$('discoverView').hidden=view!=='discover';$('apiView').hidden=view!=='api';if(view==='api')window.apiCatalogo?.mostrata();
   document.body.classList.remove('detail-open');
-  document.querySelectorAll('[data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+  const navView=view==='discover'?'catalog':view;document.querySelectorAll('[data-view]').forEach(b=>{const active=b.dataset.view===navView;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
 }
 function requestClose(dialog){
   if(dialog.id==='captureDialog'&&busy){$('captureFeedback').textContent='Attendi che l’operazione termini.';return}
@@ -359,27 +316,20 @@ function requestClose(dialog){
 }
 for(const id of ['editor','settings','captureDialog'])$(id).addEventListener('cancel',e=>{e.preventDefault();requestClose($(id))});
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>showView(b.dataset.view));
-$('navAddBtn').onclick=()=>newEntry();
-$('navSettingsBtn').onclick=()=>$('settingsBtn').click();
+$('navAddBtn').onclick=()=>$('addDialog').showModal();
 function updateCapabilities(){
   applyTheme(prefs.theme||'system');
   renderConfigStatus();
   $('exportScope').textContent=`Esporterai ${targets().length} schede: ${chosen.size?'selezione attiva':'risultati filtrati'}. Torna al Catalogo per cambiare la selezione.`;
-  for(const id of ['addBtn','navAddBtn','navSettingsBtn','settingsBtn','openArchiveBtn','importBtn','reloadLocalBtn','saveFileBtn','saveDriveBtn','exitBtn','exitFileBtn','exitDriveBtn','sheetsBtn','authorizeGoogleBtn','verifyAiBtn','verifyGithubBtn','verifyGoogleBtn','captureBtn','analyzeCaptureBtn','archiveCaptureBtn','captureFile','githubSearchBtn','moreGithubBtn','loadMineBtn','appUpdateBtn','checkAllUpdatesBtn','checkConfigBtn','settingsLogBtn','exportLogBtn','errorLogBtn'])$(id).disabled=busy;
-  $('connection').textContent=localToken&&localLoaded?'● Assistente locale collegato':'Catalogo nel browser';
-  $('modeHelp').textContent=localToken?'Analisi IA e controllo ZIP disponibili con il modello configurato.':'Puoi consultare, aggiornare GitHub ed esportare. IA e controllo ZIP richiedono l’assistente sul PC.';
-  $('reloadLocalBtn').hidden=!localToken;
-  $('refreshAll').disabled=busy;$('analyzeAll').disabled=busy||!localToken;
-  document.querySelectorAll('[data-action="refresh"],[data-action="analyze"],[data-action="download"],[data-action="edit"],[data-action="delete"]').forEach(b=>{
-    b.disabled=busy||(!localToken&&['analyze','download'].includes(b.dataset.action));
-    if(!localToken&&['analyze','download'].includes(b.dataset.action))b.title='Richiede l’assistente locale sul PC';
-  });
+  for(const id of ['saveBtn','navAddBtn','settingsBtn','openArchiveBtn','importBtn','authorizeGoogleBtn','verifyAiBtn','verifyGithubBtn','verifyGoogleBtn','analyzeCaptureBtn','archiveCaptureBtn','captureFile','githubSearchBtn','moreGithubBtn','loadMineBtn','appUpdateBtn','checkAllUpdatesBtn','discoverBtn','exportLogBtn','errorLogBtn'])$(id).disabled=busy;
+  $('modeHelp').textContent='Il catalogo vive nel browser: salva il file completo ogni volta che chiudi. L’analisi IA parte dal browser, con il provider scelto in Impostazioni.';
+  $('refreshAll').disabled=busy;$('analyzeAll').disabled=busy;
+  document.querySelectorAll('[data-action="refresh"],[data-action="analyze"],[data-action="edit"],[data-action="delete"]').forEach(b=>{b.disabled=busy});
 }
 function renderConfigStatus(){
   const provider=prefs.provider||'ollama',live=!!googleAuth.token&&googleAuth.expiresAt>Date.now();
   $('configStatus').textContent=[
     'IA: '+(prefs.model?'modello indicato':'modello mancante')+' · '+(provider==='ollama'?'Ollama non richiede una chiave':session.apiKey?'chiave presente (validità da verificare)':'chiave API mancante'),
-    'Assistente PC: '+(localToken?'collegato':'non collegato; serve per IA e ZIP'),
     'Google: '+(!prefs.googleClient?'Client ID mancante':live?'accesso autorizzato in questa sessione':googleAuth.token?'token scaduto: ricollega Google':'accesso da autorizzare con Collega Google'),
     'GitHub: '+(session.githubKey?'token presente (validità da verificare)':'senza token: accesso pubblico con limiti inferiori')
   ].join('\n');
@@ -388,9 +338,8 @@ function renderConfigStatus(){
 async function verifyAiCredential(){
   const provider=$('provider').value||'ollama',apiKey=$('apiKey').value.trim(),model=$('model').value.trim();
   if(provider!=='ollama'&&!apiKey)throw new AtlasError('AI_KEY_MISSING');
-  if(!localToken)throw new AtlasError('LOCAL_REQUIRED');
   $('settingsFeedback').textContent='Verifica IA in corso…';
-  const result=await local('verify/ai',{provider,apiKey,model});
+  const result=await ia('verify/ai',{provider,apiKey,model});
   if(result.authenticated!==true)throw new AtlasError('RESPONSE_INVALID');
   recordDiagnostic('AI_CREDENTIAL_VERIFIED',{operation:'verify_ai',service:'ai',level:'info'});
   const modelResult=result.modelListed===true?' Il modello indicato compare nel catalogo.':result.modelListed===false?' Il modello indicato non compare nel catalogo: controlla il nome.':' Il modello non è stato verificato.';
@@ -421,15 +370,12 @@ $('verifyAiBtn').onclick=()=>run(verifyAiCredential);
 $('verifyGithubBtn').onclick=()=>run(verifyGithubCredential);
 $('verifyGoogleBtn').onclick=()=>run(verifyGoogleCredential);
 $('errorGuide').innerHTML=Object.entries(ERROR_HELP).map(([code,item])=>'<details><summary>'+escapeHTML(item[0])+'</summary><p>'+escapeHTML(item[1])+'</p><small class="muted">Codice: '+escapeHTML(code)+'</small></details>').join('');
-$('checkConfigBtn').onclick=()=>{renderConfigStatus();$('settingsFeedback').textContent='Stato dei campi salvati aggiornato. Questa verifica non contatta i servizi e non conferma la validità di chiavi o modelli.'};
 $('authorizeGoogleBtn').onclick=()=>run(async function google_connect(){if(formDirty)throw new AtlasError('DRAFT_UNSAVED');await googleAccess('https://www.googleapis.com/auth/drive.file');$('settingsFeedback').textContent='Accesso Google autorizzato. Non è stato creato alcun backup: ora puoi usare Backup su Drive.'});
 $('exportLogBtn').onclick=()=>run(exportDiagnostics);
-$('settingsLogBtn').onclick=()=>run(exportDiagnostics);
 $('errorLogBtn').onclick=()=>run(exportDiagnostics);
-$('errorSettingsBtn').onclick=()=>{const field=$('errorSettingsBtn').dataset.field;if($('exitDialog').open)$('exitDialog').close();if(!$('settings').open)$('settingsBtn').click();$(field)?.focus()};
+$('errorSettingsBtn').onclick=()=>{const field=$('errorSettingsBtn').dataset.field;if(!$('settings').open)$('settingsBtn').click();$(field)?.focus()};
 window.addEventListener('error',e=>{const script=String(e.filename||'').split('/').pop().split('?')[0];showError(new AtlasError('UNKNOWN',{script,line:e.lineno,column:e.colno}),'browser_error')});
 window.addEventListener('unhandledrejection',e=>{e.preventDefault();showError(e.reason instanceof AtlasError?e.reason:new AtlasError('UNKNOWN'),'unhandled_promise')});
-$('captureBtn').onclick=showCapture;
 $('captureFile').onchange=()=>{const file=$('captureFile').files[0];$('captureFile').value='';run(async function capture_import(){await loadCaptureFile(file)})};
 $('analyzeCaptureBtn').onclick=()=>run(analyzeCaptureDraft);
 $('archiveCaptureBtn').onclick=()=>run(archiveCapture);
@@ -441,8 +387,6 @@ $('moreGithubBtn').onclick=()=>run(async function search_more(){await searchGith
 $('webSearchBtn').onclick=searchWeb;
 $('discoveryQuery').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('githubSearchBtn').click()}});
 $('discoveryResults').addEventListener('click',e=>{const button=e.target.closest('[data-archive-result]');if(!button)return;const record=discoveryResults[Number(button.dataset.archiveResult)];if(record)newEntry('github',record)});
-$('newIdeaBtn').onclick=()=>newEntry('idea');
-$('newWebBtn').onclick=()=>newEntry('web');
 $('loadMineBtn').onclick=()=>run(loadMyGithub);
 $('checkAllUpdatesBtn').onclick=()=>run(async function check_updates(){
   const list=repos.filter(r=>r.kind==='github');if(!list.length)throw new AtlasError('GITHUB_ONLY');
