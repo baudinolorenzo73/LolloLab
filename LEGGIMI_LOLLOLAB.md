@@ -1,4 +1,9 @@
-# LolloLab 1.10.0
+# LolloLab 1.10.1
+
+## Novità 1.10.1 — correzioni
+- **Autoriparazione**: se il telefono tiene in cache un `index.html` vecchio insieme ai file nuovi, i pulsanti (Impostazioni, Aggiorna GitHub…) non rispondevano. Ora la pagina se ne accorge, svuota la cache dell'app e si ricarica da sola, una volta. I dati dell'archivio non si toccano.
+- **Service worker**: salva in cache solo file riconvalidati dalla rete, non quelli già vecchi nella cache del browser (era la causa del problema).
+- **Aggiorna GitHub**: una sola richiesta per repository se nulla è cambiato (prima 3: con 28 repository superava il limite di 60 all'ora di GitHub). Se il limite scatta, si ferma subito e spiega il motivo. Con un token GitHub (Impostazioni) il limite sale a 5000 all'ora.
 
 ## Novità 1.10.0 — più semplice
 

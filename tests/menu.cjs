@@ -57,9 +57,38 @@ const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.
     assert.deepEqual(prova,{senza:{file:true,drive:0},con:{file:true,drive:1}});
     pass('💾 Salva: solo file senza Google, file + Drive con Google collegato');
 
+    // Aggiorna GitHub: 1 richiesta per repository se nulla è cambiato; si ferma al limite di richieste
+    let modo='ok';const richieste=[];
+    await context.route(/^https:\/\/api\.github\.com\/repos\//,r=>{richieste.push(r.request().url());
+      const cors={'access-control-allow-origin':'*'};
+      if(modo==='limite')return r.fulfill({status:429,headers:cors,contentType:'application/json',body:'{"message":"rate limit"}'});
+      return r.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify(/\/repos\/[^/]+\/[^/]+$/.test(r.request().url())?{pushed_at:'T1',stargazers_count:1}:{})})});
+    await page.click('[data-view="catalog"]');
+    const nGithub=await page.evaluate(()=>{const l=repos.filter(r=>r.kind==='github');l.forEach(r=>{r.github={...(r.github||{}),pushed:'T1'}});return l.length});
+    await page.click('#checkAllUpdatesBtn');await page.waitForFunction(()=>/Controllati/.test(document.getElementById('message').textContent));
+    assert.equal(richieste.length,nGithub);assert(richieste.every(u=>/\/repos\/[^/]+\/[^/]+$/.test(u)));
+    pass('Aggiorna GitHub: una sola richiesta per repository se nulla è cambiato (niente limite di 60 all’ora)');
+    modo='limite';richieste.length=0;
+    await page.click('#checkAllUpdatesBtn');await page.waitForFunction(()=>/Limite richieste GitHub/.test(document.getElementById('message').textContent));
+    assert.equal(richieste.length,1);assert(await page.locator('#errorActions').isVisible());
+    pass('Limite di GitHub: il controllo si ferma subito e spiega il motivo');
+
     await page.setViewportSize({width:390,height:844});
     for(const v of ['catalog','api','backup'])await page.click(`[data-view="${v}"]`).then(()=>page.waitForTimeout(100)).then(async()=>assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'scorrimento orizzontale in '+v));
     pass('Telefono: nessuno scorrimento orizzontale nelle tre sezioni');
+    // autoriparazione: index.html vecchio in cache + file nuovi
+    const ctx2=await browser.newContext({viewport:{width:390,height:844}});
+    const fs=require('fs');const stale=fs.readFileSync(path.join(root,'index.html'),'utf8').replace('<meta name="app-version" content="1.10.1">','<meta name="app-version" content="1.10.0">');
+    let serviti=0;
+    await ctx2.route(/^https:\/\/(raw\.githubusercontent\.com|api\.github\.com)\//,r=>r.fulfill({status:503,body:'{}'}));
+    await ctx2.route(`http://127.0.0.1:${port}/index.html`,r=>{serviti++;return r.fulfill({status:200,contentType:'text/html',body:stale})});
+    const p2=await ctx2.newPage();const err2=[];p2.on('pageerror',e=>err2.push(e.message));
+    await p2.goto(`http://127.0.0.1:${port}/index.html`);
+    await p2.waitForFunction(()=>location.search.includes('_r=')&&typeof repos!=='undefined'&&repos.length>0,null,{timeout:15000});
+    assert.equal(await p2.getAttribute('meta[name="app-version"]','content'),'1.10.1');
+    await p2.click('[data-view="backup"]');await p2.click('#settingsBtn');assert(await p2.locator('#settings').isVisible());
+    assert.deepEqual(await p2.locator('.app-nav button').allTextContents(),['Archivio','API gratuite','Impostazioni e backup','+ Aggiungi']);
+    pass('index.html vecchio in cache: la pagina se ne accorge, svuota la cache dell’app e si ricarica da sola');
     assert.deepEqual(errors,[]);pass('Nessun errore JavaScript');
     console.log(`All ${checks} menu checks passed.`);
   }catch(e){console.error(e);process.exitCode=1}

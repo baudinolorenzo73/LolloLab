@@ -19,7 +19,7 @@ function recordDiagnostic(code,meta={}){
   try{localStorage.setItem(LOG_KEY,JSON.stringify(diagnosticEvents))}catch{}
 }
 function diagnosticSnapshot(){
-  return {application:'Repo Atlas',version:'1.10.0',exportedAt:new Date().toISOString(),
+  return {application:'Repo Atlas',version:'1.10.1',exportedAt:new Date().toISOString(),
     environment:{online:navigator.onLine!==false,browserEmergencyCopy:storageOK,pendingFileSave:fileGeneration!==generation,
       provider:['ollama','groq','openrouter','openai'].includes(prefs.provider)?prefs.provider:'unset',
       aiKeyPresent:!!session.apiKey,modelPresent:!!prefs.model,githubTokenPresent:!!session.githubKey,

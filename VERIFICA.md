@@ -1,5 +1,9 @@
 # Verifica
 
+## Controlli 1.10.1
+- tests/menu.cjs: index.html vecchio in cache → autoriparazione (provata anche con l'index.html reale della 1.9.0); Aggiorna GitHub = 1 richiesta per repository; stop al limite di richieste.
+- tests/sw.cjs: installazione con cache:reload e fetch con cache:no-cache.
+
 ## Controlli 1.10.0 (ristrutturazione)
 - node tests/app.cjs, sw.cjs, api.cjs, ia.cjs e menu.cjs superati.
 - menu.cjs: 3 voci + «+ Aggiungi», idea/link/foto, Cerca dentro Archivio, Impostazioni dal backup, esportazioni JSON/Excel/PDF, 💾 Salva (solo file senza Google; file + Drive con Google, con Drive simulato), nessuno scorrimento orizzontale a 390 px.

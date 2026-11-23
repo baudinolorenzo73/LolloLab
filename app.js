@@ -1,5 +1,5 @@
 'use strict';
-const $=id=>document.getElementById(id), DB='repo-atlas.db.v1', PREF='repo-atlas.settings.v1';
+const $=id=>document.getElementById(id)||(typeof document.createElement==='function'?document.createElement('span'):null), DB='repo-atlas.db.v1', PREF='repo-atlas.settings.v1';
 let repos=[], chosen=new Set(), current=null, editing=null, prefs={}, googleToken='', busy=false, storageOK=true;
 let generation=0, fileGeneration=-1, driveGeneration=-1;
 let fileHandle=null, fileQueue=Promise.resolve(), fileError='', lastFile='', formDirty=false, importMode='merge';
@@ -142,12 +142,13 @@ async function jsonFetch(url,options={}){
     recordDiagnostic(failure.code,{...failure.meta,operation:'request'});throw failure;
   }finally{clearTimeout(timer)}
 }
-async function github(r){
+async function github(r,light=false){
   if(r.kind!=='github')throw new AtlasError('GITHUB_ONLY');
   message('Controllo aggiornamenti GitHub: '+r.id);const headers=githubHeaders(),root='https://api.github.com/repos/'+r.id;
   const meta=await jsonFetch(root,{headers});let readme=r.readme||'',sha='';
-  try{const data=await jsonFetch(root+'/readme',{headers});if(data.encoding==='base64')readme=new TextDecoder().decode(Uint8Array.from(atob(data.content.replace(/\s/g,'')),c=>c.charCodeAt(0))).slice(0,40000)}catch(e){recordDiagnostic(e.code||'UNKNOWN',{operation:'github_readme',service:'github'})}
-  try{const commits=await jsonFetch(root+'/commits?per_page=1',{headers});const candidate=commits[0]?.sha;if(typeof candidate==='string'&&/^[a-f0-9]{40,64}$/.test(candidate))sha=candidate}catch(e){recordDiagnostic(e.code||'UNKNOWN',{operation:'github_commits',service:'github'})}
+  const invariato=light&&r.github?.pushed&&meta.pushed_at===r.github.pushed;
+  if(!invariato)try{const data=await jsonFetch(root+'/readme',{headers});if(data.encoding==='base64')readme=new TextDecoder().decode(Uint8Array.from(atob(data.content.replace(/\s/g,'')),c=>c.charCodeAt(0))).slice(0,40000)}catch(e){recordDiagnostic(e.code||'UNKNOWN',{operation:'github_readme',service:'github'})}
+  if(!invariato)try{const commits=await jsonFetch(root+'/commits?per_page=1',{headers});const candidate=commits[0]?.sha;if(typeof candidate==='string'&&/^[a-f0-9]{40,64}$/.test(candidate))sha=candidate}catch(e){recordDiagnostic(e.code||'UNKNOWN',{operation:'github_commits',service:'github'})}
   const old=r.github||{},wasChecked=!!r.checkedAt;
   const changed=!!((old.sha&&sha&&old.sha!==sha)||(old.pushed&&meta.pushed_at&&old.pushed!==meta.pushed_at));
   r.updateState=wasChecked?(changed?'changed':'same'):'new';
@@ -391,9 +392,10 @@ $('loadMineBtn').onclick=()=>run(loadMyGithub);
 $('checkAllUpdatesBtn').onclick=()=>run(async function check_updates(){
   const list=repos.filter(r=>r.kind==='github');if(!list.length)throw new AtlasError('GITHUB_ONLY');
   if(!confirm('Controllare gli aggiornamenti di '+list.length+' repository GitHub archiviati?'))return;
-  let changed=0,failed=0;
-  for(let i=0;i<list.length;i++){message((i+1)+'/'+list.length+' · Controllo aggiornamenti');try{await github(list[i]);if(list[i].updateState==='changed')changed++}catch(e){failed++;showError(e,'check_updates')}}
-  message('Controllati '+(list.length-failed)+'/'+list.length+' repository. Aggiornamenti trovati: '+changed+'.'+(failed?' Errori: '+failed+'. Puoi esportare il log diagnostico.':''));
+  let changed=0,failed=0,lastError=null;
+  for(let i=0;i<list.length;i++){message((i+1)+'/'+list.length+' · Controllo aggiornamenti');try{await github(list[i],true);if(list[i].updateState==='changed')changed++}catch(e){failed++;lastError=e;recordDiagnostic(errorInfo(e).code||'UNKNOWN',{operation:'check_updates',service:'github'});if(errorInfo(e).code==='GITHUB_RATE')break}}
+  message('Controllati '+(list.length-failed)+'/'+list.length+' repository. Aggiornamenti trovati: '+changed+'.'+(failed?' Non controllati: '+failed+'.':''));
+  if(lastError)showError(lastError,'check_updates');
 });
 $('appUpdateBtn').onclick=()=>run(checkAppUpdate);
 $('reloadAppBtn').onclick=()=>{if(formDirty||fileGeneration!==generation){message('Salva il file completo prima di ricaricare.');return}location.reload()};
